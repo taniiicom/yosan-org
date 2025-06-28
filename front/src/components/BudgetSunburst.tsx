@@ -1,6 +1,7 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
+import styles from "@/app/budget.module.css";
 
 export interface BudgetNode {
   name: string;
@@ -20,6 +21,11 @@ interface Props {
 
 export default function BudgetSunburst({ data, size = 500 }: Props) {
   const ref = useRef<SVGSVGElement | null>(null);
+  const [tooltip, setTooltip] = useState<{
+    x: number;
+    y: number;
+    text: string;
+  } | null>(null);
 
   useEffect(() => {
     if (!ref.current) return;
@@ -89,13 +95,74 @@ export default function BudgetSunburst({ data, size = 500 }: Props) {
         while (p.depth > 1) p = p.parent!;
         return color(p.data.name);
       })
+      .attr("fill-opacity", 0)
+      .attr("d", (d) => {
+        const curr = (d as SunburstNode).current;
+        return arcGen({ ...curr, x1: curr.x0 } as SunburstNode);
+      });
+
+    path
+      .transition()
+      .duration(750)
       .attr("fill-opacity", (d) => (arcVisible((d as SunburstNode).current) ? 0.6 : 0))
-      .attr("d", (d) => arcGen((d as SunburstNode).current));
+      .attrTween("d", function (d) {
+        const curr = (d as SunburstNode).current;
+        const i = d3.interpolate({ ...curr, x1: curr.x0 }, curr);
+        return (t) => arcGen(i(t) as SunburstNode) || "";
+      });
+
+    const showTooltip = (
+      e: { clientX: number; clientY: number },
+      d: SunburstNode
+    ) => {
+      if (!ref.current) return;
+      const rect = ref.current.getBoundingClientRect();
+      setTooltip({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+        text: `${d.ancestors().map((n) => n.data.name).reverse().join(" / ")}: ${d3.format(",d")(d.value!)}`,
+      });
+    };
+
+    const hideTooltip = () => setTooltip(null);
 
     path
       .filter((d) => (d as SunburstNode).children != null)
       .style("cursor", "pointer")
-      .on("click", (_event, p) => clicked(p as SunburstNode));
+      .on("click", (_event, p) => clicked(p as unknown as SunburstNode));
+
+    path
+      .on("mouseenter", (e, d) =>
+        showTooltip(
+          e as unknown as { clientX: number; clientY: number },
+          d as unknown as SunburstNode
+        )
+      )
+      .on("mousemove", (e, d) =>
+        showTooltip(
+          e as unknown as { clientX: number; clientY: number },
+          d as unknown as SunburstNode
+        )
+      )
+      .on("mouseleave", hideTooltip)
+      .on("touchstart", (e, d) => {
+        const te = e as unknown as TouchEvent;
+        te.preventDefault();
+        const t = te.touches[0];
+        showTooltip(
+          t as unknown as { clientX: number; clientY: number },
+          d as unknown as SunburstNode
+        );
+      })
+      .on("touchmove", (e, d) => {
+        const te = e as unknown as TouchEvent;
+        const t = te.touches[0];
+        showTooltip(
+          t as unknown as { clientX: number; clientY: number },
+          d as unknown as SunburstNode
+        );
+      })
+      .on("touchend touchcancel", hideTooltip);
 
     path.append("title").text(
       (d) => `${d.ancestors().map((d) => d.data.name).reverse().join("/")}
@@ -158,6 +225,18 @@ ${d3.format(",d")(d.value!)}`
     }
   }, [data, size]);
 
-  return <svg ref={ref} width={size} height={size} />;
+  return (
+    <div style={{ position: "relative", width: size, height: size }}>
+      <svg ref={ref} width={size} height={size} />
+      {tooltip && (
+        <div
+          className={styles.tooltip}
+          style={{ left: tooltip.x, top: tooltip.y }}
+        >
+          {tooltip.text}
+        </div>
+      )}
+    </div>
+  );
 }
 

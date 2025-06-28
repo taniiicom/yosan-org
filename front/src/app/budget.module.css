@@ -9,6 +9,20 @@
 
 .chart {
   margin: 1rem;
+  position: relative;
+}
+
+.tooltip {
+  position: absolute;
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  transform: translate(-50%, -100%);
+  z-index: 10;
 }
 
 @media (max-width: 700px) {
