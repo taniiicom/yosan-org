@@ -1,3 +1,5 @@
+"use client";
+import { useMemo } from "react";
 import type { BudgetRaw } from "@/utils/parseBudget";
 import budgetStyles from "./budget.module.css";
 import revenueData from "@/data/japan/2025/revenue.json";
@@ -6,8 +8,14 @@ import { parseBudget } from "@/utils/parseBudget";
 import BudgetSunburst from "@/components/BudgetSunburst";
 
 export default function Home() {
-  const revenue = parseBudget(revenueData as BudgetRaw);
-  const expenditure = parseBudget(expenditureData as BudgetRaw);
+  const revenue = useMemo(
+    () => parseBudget(revenueData as BudgetRaw),
+    []
+  );
+  const expenditure = useMemo(
+    () => parseBudget(expenditureData as BudgetRaw),
+    []
+  );
 
   return (
     <main className={budgetStyles.container}>
