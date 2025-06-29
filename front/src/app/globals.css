@@ -24,6 +24,30 @@ body {
   font-family: Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* 小さな画面でのアクセシビリティ向上 */
+@media (max-width: 640px) {
+  body {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+}
+
+/* タッチデバイスでのボタンサイズ改善 */
+@media (hover: none) and (pointer: coarse) {
+  button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* フォーカス時のアクセシビリティ向上 */
+button:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
 }
 
 * {
