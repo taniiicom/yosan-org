@@ -193,20 +193,20 @@ const InteractivePieChart: React.FC<InteractivePieChartProps> = ({ title, data, 
 
   return (
     <motion.div 
-      className={`bg-white/70 backdrop-blur-sm rounded-3xl shadow-xl border border-gray-200/50 p-8 ${className || ''}`}
+      className={`bg-white/70 backdrop-blur-sm rounded-3xl shadow-xl border border-gray-200/50 p-8 lg:p-10 ${className || ''}`}
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5 }}
       whileHover={{ y: -4 }}
     >
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-4">
+          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg ${
             title === '歳入' 
               ? 'bg-gradient-to-r from-green-500 to-emerald-600' 
               : 'bg-gradient-to-r from-red-500 to-pink-600'
           }`}>
-            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               {title === '歳入' ? (
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               ) : (
@@ -214,14 +214,14 @@ const InteractivePieChart: React.FC<InteractivePieChartProps> = ({ title, data, 
               )}
             </svg>
           </div>
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+          <h2 className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
             {title}
           </h2>
         </div>
         {drillPath.length > 0 && (
           <motion.button
             onClick={goBack}
-            className="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl flex items-center gap-2"
+            className="px-5 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl flex items-center gap-2"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -235,23 +235,23 @@ const InteractivePieChart: React.FC<InteractivePieChartProps> = ({ title, data, 
 
       {drillPath.length > 0 && (
         <motion.nav 
-          className="mb-6 p-4 bg-gray-50/50 rounded-2xl border border-gray-200/50"
+          className="mb-8 p-5 bg-gray-50/50 rounded-2xl border border-gray-200/50"
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
           transition={{ duration: 0.3 }}
         >
-          <ol className="flex items-center space-x-2 text-sm text-gray-600 flex-wrap">
+          <ol className="flex items-center space-x-3 text-sm text-gray-600 flex-wrap">
             <li>
               <button
                 onClick={() => setDrillPath([])}
-                className="px-3 py-1 rounded-lg hover:bg-blue-100 hover:text-blue-600 transition-all duration-200"
+                className="px-4 py-2 rounded-lg hover:bg-blue-100 hover:text-blue-600 transition-all duration-200"
               >
                 トップ
               </button>
             </li>
             {drillPath.map((path, index) => (
               <React.Fragment key={index}>
-                <li className="text-gray-400">
+                <li className="text-gray-400 mx-1">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
@@ -259,7 +259,7 @@ const InteractivePieChart: React.FC<InteractivePieChartProps> = ({ title, data, 
                 <li>
                   <button
                     onClick={() => handleBreadcrumbClick(index)}
-                    className="px-3 py-1 rounded-lg hover:bg-blue-100 hover:text-blue-600 transition-all duration-200"
+                    className="px-4 py-2 rounded-lg hover:bg-blue-100 hover:text-blue-600 transition-all duration-200"
                   >
                     {path.name}
                   </button>
@@ -270,17 +270,17 @@ const InteractivePieChart: React.FC<InteractivePieChartProps> = ({ title, data, 
         </motion.nav>
       )}
 
-      <div className="h-96 flex items-center justify-center mb-6 bg-gradient-to-br from-gray-50/50 to-white/50 rounded-2xl border border-gray-100/50">
-        <div className="w-full h-full p-4">
+      <div className="h-96 lg:h-[420px] flex items-center justify-center mb-8 bg-gradient-to-br from-gray-50/50 to-white/50 rounded-2xl border border-gray-100/50">
+        <div className="w-full h-full p-6">
           <Doughnut data={chartData} options={options} />
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-        {currentData.slice(0, 12).map((entry, index) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {currentData.map((entry, index) => (
           <motion.div 
             key={index} 
-            className={`flex items-center p-3 rounded-xl border transition-all duration-200 cursor-pointer ${
+            className={`flex items-center p-4 rounded-xl border transition-all duration-200 cursor-pointer ${
               hoveredSegment === entry.name 
                 ? 'bg-blue-50 border-blue-200 shadow-md' 
                 : 'bg-white/50 border-gray-200/50 hover:bg-gray-50/50'
@@ -290,7 +290,7 @@ const InteractivePieChart: React.FC<InteractivePieChartProps> = ({ title, data, 
             whileTap={{ scale: 0.98 }}
           >
             <div
-              className="w-4 h-4 rounded-full mr-3 flex-shrink-0 shadow-sm"
+              className="w-5 h-5 rounded-full mr-4 flex-shrink-0 shadow-sm"
               style={{ backgroundColor: entry.color }}
             />
             <div className="min-w-0 flex-1">
@@ -302,24 +302,17 @@ const InteractivePieChart: React.FC<InteractivePieChartProps> = ({ title, data, 
               >
                 {entry.name}
               </span>
-              <span className="block text-xs text-gray-500 truncate">
+              <span className="block text-xs text-gray-500 truncate mt-1">
                 {formatCurrency(entry.value)}
               </span>
             </div>
             {entry.children && (
-              <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-gray-400 flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             )}
           </motion.div>
         ))}
-        {currentData.length > 12 && (
-          <div className="flex items-center justify-center p-3 rounded-xl bg-gray-100/50 border border-gray-200/50">
-            <span className="text-sm text-gray-500 font-medium">
-              +{currentData.length - 12} more...
-            </span>
-          </div>
-        )}
       </div>
     </motion.div>
   );
