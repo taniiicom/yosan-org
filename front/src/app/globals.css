@@ -123,6 +123,7 @@ body {
   }
 }
 
+
 /* フォーカス時のアクセシビリティ向上 */
 button:focus-visible {
   outline: 2px solid var(--clay-accent);
