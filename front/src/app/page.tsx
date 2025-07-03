@@ -42,86 +42,82 @@ export default function Home() {
   const diff = revenueTotal - expenditureTotal;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 dark:from-slate-800 dark:to-slate-900 text-foreground">
-      <header className="py-16 text-center">
+    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-slate-900 text-gray-800 dark:text-gray-100">
+      <section className="flex-1 flex flex-col justify-center items-center text-center py-20 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white">
         <motion.h1
-          className="text-3xl sm:text-5xl font-bold mb-4"
-          initial={{ opacity: 0, y: -20 }}
+          className="text-4xl sm:text-6xl font-bold mb-6"
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.8 }}
         >
           令和7年度 国家予算可視化
         </motion.h1>
         <motion.p
-          className="text-gray-600 dark:text-gray-300 max-w-xl mx-auto"
-          initial={{ opacity: 0, y: 10 }}
+          className="text-sm sm:text-lg max-w-xl"
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
         >
           日本の国家予算をインタラクティブなグラフで探索できます
         </motion.p>
-      </header>
+      </section>
 
-      <main className="mx-auto max-w-6xl px-4 pb-20">
-        <motion.div
-          className="grid md:grid-cols-3 gap-6 mb-16"
+      <main className="max-w-5xl w-full mx-auto px-4 py-16 space-y-16">
+        <motion.section
+          className="grid gap-8 sm:grid-cols-3 text-center"
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
         >
-          <div className="glass-card p-6 text-center">
-            <p className="text-sm text-gray-500 mb-2">歳入総額</p>
-            <p className="text-2xl font-semibold">{formatCurrency(revenueTotal)}</p>
+          <div>
+            <p className="text-sm text-gray-500">歳入総額</p>
+            <p className="text-3xl font-semibold mt-2">{formatCurrency(revenueTotal)}</p>
           </div>
-          <div className="glass-card p-6 text-center">
-            <p className="text-sm text-gray-500 mb-2">歳出総額</p>
-            <p className="text-2xl font-semibold">{formatCurrency(expenditureTotal)}</p>
+          <div>
+            <p className="text-sm text-gray-500">歳出総額</p>
+            <p className="text-3xl font-semibold mt-2">{formatCurrency(expenditureTotal)}</p>
           </div>
-          <div className="glass-card p-6 text-center">
-            <p className="text-sm text-gray-500 mb-2">収支差額</p>
-            <p className={`text-2xl font-semibold ${diff >= 0 ? "text-green-600" : "text-red-600"}`}>{diff >= 0 ? "+" : ""}{formatCurrency(Math.abs(diff))}</p>
+          <div>
+            <p className="text-sm text-gray-500">収支差額</p>
+            <p className={`text-3xl font-semibold mt-2 ${diff >= 0 ? "text-green-600" : "text-red-500"}`}>{diff >= 0 ? "+" : ""}{formatCurrency(Math.abs(diff))}</p>
           </div>
-        </motion.div>
-
-        <motion.div
-          className="grid md:grid-cols-2 gap-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
-        >
-          <div className="glass-card p-4">
-            <InteractivePieChart title="歳入" data={revenueData} className="h-full" />
-          </div>
-          <div className="glass-card p-4">
-            <InteractivePieChart title="歳出" data={expenditureData} className="h-full" />
-          </div>
-        </motion.div>
+        </motion.section>
 
         <motion.section
-          className="mt-20 max-w-3xl mx-auto"
+          className="grid gap-12 md:grid-cols-2"
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.8 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+        >
+          <InteractivePieChart title="歳入" data={revenueData} className="h-full" />
+          <InteractivePieChart title="歳出" data={expenditureData} className="h-full" />
+        </motion.section>
+
+        <motion.section
+          className="max-w-3xl mx-auto"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.4 }}
         >
           <h3 className="text-xl font-semibold mb-6 text-center">使い方</h3>
-          <ul className="space-y-4">
+          <ul className="space-y-3">
             <li className="flex items-start">
-              <span className="mr-3 text-blue-600">●</span>
-              円グラフのセグメントをクリックして詳細を表示できます
+              <span className="text-indigo-600 mr-2">●</span>円グラフをクリックすると詳細を表示します
             </li>
             <li className="flex items-start">
-              <span className="mr-3 text-green-600">●</span>
-              セグメントにマウスを重ねると金額が表示されます
+              <span className="text-green-600 mr-2">●</span>ホバーで金額を確認できます
             </li>
             <li className="flex items-start">
-              <span className="mr-3 text-purple-600">●</span>
-              パンくずナビゲーションから上位階層に戻れます
+              <span className="text-pink-600 mr-2">●</span>パンくずナビゲーションから上位階層に戻れます
             </li>
           </ul>
         </motion.section>
       </main>
 
-      <footer className="text-center text-sm text-gray-600 pb-10">
+      <footer className="py-10 text-center text-sm text-gray-500">
         © 2025 国家予算可視化システム | データソース: 令和7年度一般会計予算
       </footer>
     </div>
