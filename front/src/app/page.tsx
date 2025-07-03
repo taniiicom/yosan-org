@@ -81,7 +81,7 @@ export default function Home() {
       {/* Stats */}
       <Container py={{ base: 8, md: 16 }}>
         <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.6 }}>
-          <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8} mb={16}>
+          <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={8} mb={16}>
             <Box className="clay-raised" _hover={{ transform: "scale(1.05)" }} transition="transform 0.3s">
               <Flex align="center" gap={4}>
                 <Box className="clay-inset" w={12} h={12} rounded="lg" display="flex" alignItems="center" justifyContent="center">
@@ -157,7 +157,7 @@ export default function Home() {
           </Flex>
         </motion.div>
 
-        <motion.div
+        <MotionBox
           className="clay-raised"
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
@@ -214,7 +214,7 @@ export default function Home() {
               </Box>
             </Flex>
           </SimpleGrid>
-        </motion.div>
+        </MotionBox>
       </Container>
 
       {/* Footer */}
