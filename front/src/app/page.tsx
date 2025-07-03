@@ -52,15 +52,15 @@ export default function Home() {
   const expenditureTotal = calculateTotal(expenditureData);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen">
       {/* Header */}
       <motion.header
-        className="bg-white border-b border-gray-200 sticky top-0 z-50"
+        className="sticky top-0 z-50"
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6 }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
+        <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
           <div className="text-center">
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
@@ -85,17 +85,17 @@ export default function Home() {
       </motion.header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
+      <main className="flex flex-col items-center w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
         {/* Stats Cards */}
         <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-12 sm:mb-16"
+          className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12 mb-16 sm:mb-20"
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.6 }}
         >
-          <div className="bg-white border border-gray-200 rounded-lg p-6 hover:border-gray-300 transition-colors duration-200">
+          <div className="clay-raised transition-transform transform hover:scale-105 duration-300">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 clay-inset rounded-lg flex items-center justify-center">
                 <svg
                   className="w-6 h-6 text-green-600"
                   fill="none"
@@ -121,9 +121,9 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-lg p-6 hover:border-gray-300 transition-colors duration-200">
+          <div className="clay-raised transition-transform transform hover:scale-105 duration-300">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 clay-inset rounded-lg flex items-center justify-center">
                 <svg
                   className="w-6 h-6 text-red-600"
                   fill="none"
@@ -149,9 +149,9 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-lg p-6 hover:border-gray-300 transition-colors duration-200 sm:col-span-2 lg:col-span-1">
+          <div className="clay-raised transition-transform transform hover:scale-105 duration-300 sm:col-span-2 lg:col-span-1">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 clay-inset rounded-lg flex items-center justify-center">
                 <svg
                   className="w-6 h-6 text-blue-600"
                   fill="none"
@@ -187,7 +187,7 @@ export default function Home() {
 
         {/* Charts Section */}
         <motion.div
-          className="grid grid-cols-1 xl:grid-cols-2 gap-8 lg:gap-10 xl:gap-12"
+          className="w-full flex flex-wrap justify-center gap-8"
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.8 }}
@@ -195,31 +195,31 @@ export default function Home() {
           <motion.div
             whileHover={{ scale: 1.01 }}
             transition={{ type: "spring", stiffness: 300 }}
-            className="w-full"
+            className="w-full lg:w-[45%] flex-grow"
           >
             <InteractivePieChart
               title="歳入"
               data={revenueData}
-              className="h-full hover:shadow-2xl transition-shadow duration-300"
+              className="h-full"
             />
           </motion.div>
 
           <motion.div
             whileHover={{ scale: 1.01 }}
             transition={{ type: "spring", stiffness: 300 }}
-            className="w-full"
+            className="w-full lg:w-[45%] flex-grow"
           >
             <InteractivePieChart
               title="歳出"
               data={expenditureData}
-              className="h-full hover:shadow-2xl transition-shadow duration-300"
+              className="h-full"
             />
           </motion.div>
         </motion.div>
 
         {/* Instructions */}
         <motion.div
-          className="mt-12 sm:mt-16 lg:mt-20 bg-gray-50 rounded-lg p-6 sm:p-8 border border-gray-200"
+          className="w-full mt-16 sm:mt-20 lg:mt-24 clay-raised"
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 1.0 }}
@@ -229,7 +229,7 @@ export default function Home() {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="flex items-start gap-4">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 clay-inset rounded-lg flex items-center justify-center flex-shrink-0">
                 <svg
                   className="w-5 h-5 text-blue-600"
                   fill="none"
@@ -254,7 +254,7 @@ export default function Home() {
               </div>
             </div>
             <div className="flex items-start gap-4">
-              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 clay-inset rounded-lg flex items-center justify-center flex-shrink-0">
                 <svg
                   className="w-5 h-5 text-green-600"
                   fill="none"
@@ -279,7 +279,7 @@ export default function Home() {
               </div>
             </div>
             <div className="flex items-start gap-4">
-              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 clay-inset rounded-lg flex items-center justify-center flex-shrink-0">
                 <svg
                   className="w-5 h-5 text-purple-600"
                   fill="none"
@@ -309,12 +309,12 @@ export default function Home() {
 
       {/* Footer */}
       <motion.footer
-        className="mt-16 sm:mt-20 lg:mt-24 border-t border-gray-200"
+        className="mt-20 sm:mt-24 lg:mt-32"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6, delay: 1.2 }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center text-gray-600">
             <p className="text-sm">
               © 2025 国家予算可視化システム | データソース:

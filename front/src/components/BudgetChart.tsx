@@ -225,22 +225,15 @@ const InteractivePieChart: React.FC<InteractivePieChartProps> = ({
 
   return (
     <motion.div
-      className={`bg-white/70 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-xl border border-gray-200/50 p-4 sm:p-6 lg:p-8 xl:p-10 ${
-        className || ""
-      }`}
+      className={`clay-card ${className || ""}`}
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5 }}
-      whileHover={{ y: -2 }}
     >
       <div className="flex items-center justify-between mb-6 sm:mb-8">
         <div className="flex items-center gap-3 sm:gap-4 min-w-0">
           <div
-            className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg ${
-              title === "歳入"
-                ? "bg-gradient-to-r from-green-500 to-emerald-600"
-                : "bg-gradient-to-r from-red-500 to-pink-600"
-            }`}
+            className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center clay-icon`}
           >
             <svg
               className="w-5 h-5 sm:w-6 sm:h-6 text-white"
@@ -272,31 +265,35 @@ const InteractivePieChart: React.FC<InteractivePieChartProps> = ({
         {drillPath.length > 0 && (
           <motion.button
             onClick={goBack}
-            className="px-3 py-2 sm:px-4 sm:py-2 lg:px-5 lg:py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg sm:rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl flex items-center gap-1 sm:gap-2 text-sm sm:text-base"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            className="clay-button p-3 sm:p-4 rounded-full text-white transition-all duration-200 flex items-center justify-center"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            aria-label="戻る"
           >
-            <svg
-              className="w-3 h-3 sm:w-4 sm:h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M10 19l-7-7m0 0l7-7m-7 7h18"
-              />
-            </svg>
-            戻る
+            <div className="flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8">
+              <svg
+                className="w-5 h-5 sm:w-6 sm:h-6"
+                fill="none"
+                stroke="gray"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                />
+              </svg>
+            </div>
           </motion.button>
         )}
       </div>
 
+      <div className="m-4"></div>
+
       {drillPath.length > 0 && (
         <motion.nav
-          className="mb-6 sm:mb-8 p-3 sm:p-4 lg:p-5 bg-gray-50/50 rounded-xl sm:rounded-2xl border border-gray-200/50"
+          className="mb-6 sm:mb-8 p-3 sm:p-4 lg:p-5 clay-inset rounded-xl sm:rounded-2xl"
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: "auto" }}
           transition={{ duration: 0.3 }}
@@ -305,16 +302,16 @@ const InteractivePieChart: React.FC<InteractivePieChartProps> = ({
             <li>
               <button
                 onClick={() => setDrillPath([])}
-                className="px-2 py-1 sm:px-3 sm:py-2 lg:px-4 lg:py-2 rounded-md sm:rounded-lg hover:bg-blue-100 hover:text-blue-600 transition-all duration-200"
+                className="px-4 py-3 rounded-lg hover:bg-white/20 transition-all duration-200"
               >
                 トップ
               </button>
             </li>
             {drillPath.map((path, index) => (
               <React.Fragment key={index}>
-                <li className="text-gray-400 mx-1">
+                <li className="text-gray-400 mx-2">
                   <svg
-                    className="w-3 h-3 sm:w-4 sm:h-4"
+                    className="w-4 h-4 sm:w-5 sm:h-5"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -330,7 +327,7 @@ const InteractivePieChart: React.FC<InteractivePieChartProps> = ({
                 <li>
                   <button
                     onClick={() => handleBreadcrumbClick(index)}
-                    className="px-2 py-1 sm:px-3 sm:py-2 lg:px-4 lg:py-2 rounded-md sm:rounded-lg hover:bg-blue-100 hover:text-blue-600 transition-all duration-200 truncate max-w-24 sm:max-w-32 lg:max-w-none"
+                    className="px-4 py-3 rounded-lg hover:bg-white/20 transition-all duration-200 truncate max-w-32 sm:max-w-48 lg:max-w-none"
                     title={path.name}
                   >
                     {path.name}
@@ -342,21 +339,19 @@ const InteractivePieChart: React.FC<InteractivePieChartProps> = ({
         </motion.nav>
       )}
 
-      <div className="h-72 sm:h-80 lg:h-96 xl:h-[420px] flex items-center justify-center mb-6 sm:mb-8 bg-gradient-to-br from-gray-50/50 to-white/50 rounded-xl sm:rounded-2xl border border-gray-100/50">
+      <div className="h-72 sm:h-80 lg:h-96 xl:h-[420px] flex items-center justify-center clay-inset rounded-xl sm:rounded-2xl">
         <div className="w-full h-full p-3 sm:p-4 lg:p-6">
           <Doughnut data={chartData} options={options} />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+      <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 justify-items-center">
         {currentData.map((entry, index) => (
           <motion.div
             key={index}
-            className={`flex items-center p-3 sm:p-4 rounded-lg sm:rounded-xl border transition-all duration-200 cursor-pointer ${
-              hoveredSegment === entry.name
-                ? "bg-blue-50 border-blue-200 shadow-md"
-                : "bg-white/50 border-gray-200/50 hover:bg-gray-50/50"
-            } ${entry.children ? "hover:shadow-lg" : ""}`}
+            className={`w-full flex items-center p-4 sm:p-5 rounded-lg sm:rounded-xl transition-all duration-200 cursor-pointer clay-raised ${
+              hoveredSegment === entry.name ? "scale-105" : ""
+            }`}
             onClick={() =>
               entry.children &&
               setDrillPath((prev) => [
