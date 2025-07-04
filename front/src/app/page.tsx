@@ -11,7 +11,13 @@ import {
   Textarea,
   SimpleGrid,
   Stack,
-  chakra,
+  Drawer,
+  DrawerOverlay,
+  DrawerContent,
+  DrawerBody,
+  IconButton,
+  useDisclosure,
+  useBreakpointValue,
 } from "@chakra-ui/react";
 import defaultRevenue from "../data/japan/2025/revenue.json";
 import defaultExpenditure from "../data/japan/2025/expenditure.json";
@@ -82,10 +88,81 @@ export default function Home() {
   const revenueTotal = calculateTotal(current.revenue);
   const expenditureTotal = calculateTotal(current.expenditure);
 
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const isDesktop = useBreakpointValue({ base: false, lg: true });
+
+  const SidebarContent = ({ onSelect }: { onSelect?: () => void }) => (
+    <Box
+      w={{ base: "full", lg: 60 }}
+      p={4}
+      borderRightWidth="1px"
+      bg="gray.50"
+      _dark={{ bg: "gray.800" }}
+      h="full"
+    >
+      <Heading size="sm" mb={4}>
+        データセット
+      </Heading>
+      <Stack spacing={2}>
+        {datasets.map((d, i) => (
+          <Button
+            key={i}
+            variant={selected === i ? "solid" : "ghost"}
+            colorScheme="blue"
+            justifyContent="flex-start"
+            onClick={() => {
+              setSelected(i);
+              if (onSelect) onSelect();
+            }}
+          >
+            {d.name}
+          </Button>
+        ))}
+      </Stack>
+      <Button
+        mt={4}
+        w="full"
+        onClick={() => {
+          addDataset();
+          if (onSelect) onSelect();
+        }}
+      >
+        追加
+      </Button>
+    </Box>
+  );
+
   return (
-    <Box minH="100vh" p={6}>
-      <Stack gap={8}>
-        <Box textAlign="center">
+    <Box minH="100vh">
+      <Flex h="full">
+        {isDesktop ? (
+          <SidebarContent />
+        ) : (
+          <Drawer isOpen={isOpen} placement="left" onClose={onClose}>
+            <DrawerOverlay />
+            <DrawerContent maxW="60">
+              <DrawerBody p={0}>
+                <SidebarContent onSelect={onClose} />
+              </DrawerBody>
+            </DrawerContent>
+          </Drawer>
+        )}
+        <Box flex="1" p={6} ml={{ lg: 60 }}>
+          {!isDesktop && (
+            <IconButton
+              aria-label="メニュー"
+              icon={
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M2 4h16M2 10h16M2 16h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+              }
+              onClick={onOpen}
+              variant="outline"
+              mb={4}
+            />
+          )}
+          <Stack gap={8}>
+            <Box textAlign="center">
           <Heading
             bgGradient="linear(to-r, purple.500, blue.500)"
             bgClip="text"
@@ -100,22 +177,6 @@ export default function Home() {
         </Box>
 
         <Flex flexWrap="wrap" align="flex-end" gap={4}>
-          <chakra.select
-            w="auto"
-            value={selected}
-            onChange={(e) => setSelected(Number(e.target.value))}
-            px={3}
-            py={2}
-            borderWidth="1px"
-            borderRadius="md"
-          >
-            {datasets.map((d, i) => (
-              <option key={i} value={i}>
-                {d.name}
-              </option>
-            ))}
-          </chakra.select>
-          <Button onClick={addDataset}>データセット追加</Button>
           <Button onClick={updateDataset}>グラフ更新</Button>
           {error && (
             <Text color="red.500" ml={4} fontSize="sm">
@@ -154,6 +215,8 @@ export default function Home() {
           </Box>
         </SimpleGrid>
       </Stack>
+        </Box>
+      </Flex>
     </Box>
   );
 }
