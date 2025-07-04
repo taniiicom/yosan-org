@@ -45,10 +45,76 @@ const calculateTotal = (data: Record<string, unknown>): number => {
   return total;
 };
 
+const setAtPath = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  obj: Record<string, any>,
+  path: string[],
+  value: number
+) => {
+  const cloned = structuredClone(obj);
+  let cur = cloned;
+  for (let i = 0; i < path.length - 1; i++) {
+    const key = path[i];
+    if (typeof cur[key] !== "object" || cur[key] === null) {
+      cur[key] = {};
+    }
+    cur = cur[key];
+  }
+  cur[path[path.length - 1]] = value;
+  return cloned;
+};
+
+const deleteAtPath = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  obj: Record<string, any>,
+  path: string[]
+) => {
+  const cloned = structuredClone(obj);
+  let cur = cloned;
+  for (let i = 0; i < path.length - 1; i++) {
+    const key = path[i];
+    if (typeof cur[key] !== "object" || cur[key] === null) return cloned;
+    cur = cur[key];
+  }
+  delete cur[path[path.length - 1]];
+  return cloned;
+};
+
+const addAtPath = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  obj: Record<string, any>,
+  path: string[],
+  name: string,
+  value: number
+) => {
+  const cloned = structuredClone(obj);
+  let cur = cloned;
+  for (const key of path) {
+    if (typeof cur[key] !== "object" || cur[key] === null) {
+      cur[key] = {};
+    }
+    cur = cur[key];
+  }
+  cur[name] = value;
+  return cloned;
+};
+
 export default function Home() {
   const [datasets, setDatasets] = useState<Dataset[]>([
     { name: "Japan 2025", revenue: defaultRevenue, expenditure: defaultExpenditure },
   ]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("savedDatasets");
+    if (saved) {
+      try {
+        const arr: Dataset[] = JSON.parse(saved);
+        if (arr.length > 0) {
+          setDatasets((prev) => [...prev, ...arr]);
+        }
+      } catch {}
+    }
+  }, []);
   const [selected, setSelected] = useState(0);
   const [revenueInput, setRevenueInput] = useState(
     JSON.stringify(defaultRevenue, null, 2)
@@ -80,6 +146,52 @@ export default function Home() {
   const addDataset = () => {
     const name = `Custom ${datasets.length}`;
     setDatasets([...datasets, { name, revenue: {}, expenditure: {} }]);
+    setSelected(datasets.length);
+  };
+
+  const handleRevenueEdit = (
+    op: "set" | "delete" | "add",
+    path: string[],
+    name?: string,
+    value?: number
+  ) => {
+    setDatasets((prev) => {
+      const updated = [...prev];
+      const ds = { ...updated[selected] };
+      if (op === "set") ds.revenue = setAtPath(ds.revenue, path, value || 0);
+      if (op === "delete") ds.revenue = deleteAtPath(ds.revenue, path);
+      if (op === "add" && name) ds.revenue = addAtPath(ds.revenue, path, name, value || 0);
+      updated[selected] = ds;
+      return updated;
+    });
+  };
+
+  const handleExpenditureEdit = (
+    op: "set" | "delete" | "add",
+    path: string[],
+    name?: string,
+    value?: number
+  ) => {
+    setDatasets((prev) => {
+      const updated = [...prev];
+      const ds = { ...updated[selected] };
+      if (op === "set") ds.expenditure = setAtPath(ds.expenditure, path, value || 0);
+      if (op === "delete") ds.expenditure = deleteAtPath(ds.expenditure, path);
+      if (op === "add" && name) ds.expenditure = addAtPath(ds.expenditure, path, name, value || 0);
+      updated[selected] = ds;
+      return updated;
+    });
+  };
+
+  const saveDataset = () => {
+    const name = prompt("データセット名", current.name);
+    if (!name) return;
+    const newDs = { name, revenue: current.revenue, expenditure: current.expenditure };
+    const stored = localStorage.getItem("savedDatasets");
+    const arr = stored ? JSON.parse(stored) : [];
+    arr.push(newDs);
+    localStorage.setItem("savedDatasets", JSON.stringify(arr));
+    setDatasets((prev) => [...prev, newDs]);
     setSelected(datasets.length);
   };
 
@@ -178,6 +290,9 @@ export default function Home() {
 
         <Flex flexWrap="wrap" align="flex-end" gap={4}>
           <Button onClick={updateDataset}>グラフ更新</Button>
+          <Button onClick={saveDataset} colorScheme="green" variant="outline">
+            保存
+          </Button>
           {error && (
             <Text color="red.500" ml={4} fontSize="sm">
               {error}
@@ -186,8 +301,16 @@ export default function Home() {
         </Flex>
 
         <SimpleGrid columns={{ base: 1, lg: 2 }} gap={6}>
-          <BudgetChart title="歳入" data={current.revenue} />
-          <BudgetChart title="歳出" data={current.expenditure} />
+          <BudgetChart
+            title="歳入"
+            data={current.revenue}
+            onEdit={handleRevenueEdit}
+          />
+          <BudgetChart
+            title="歳出"
+            data={current.expenditure}
+            onEdit={handleExpenditureEdit}
+          />
         </SimpleGrid>
 
         <SimpleGrid columns={{ base: 1, lg: 2 }} gap={6}>

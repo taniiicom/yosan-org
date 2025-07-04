@@ -13,6 +13,13 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   SimpleGrid,
+  Input,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  NumberIncrementStepper,
+  NumberDecrementStepper,
+  Button,
 } from "@chakra-ui/react";
 
 ChartJS.register(ArcElement, Tooltip, Legend, Title);
@@ -138,29 +145,38 @@ const formatCurrency = (value: number): string => {
 interface InteractivePieChartProps {
   title: string;
   data: Record<string, unknown>;
+  onEdit?: (
+    op: "set" | "delete" | "add",
+    path: string[],
+    name?: string,
+    value?: number
+  ) => void;
   className?: string;
 }
 
 const InteractivePieChart: React.FC<InteractivePieChartProps> = ({
   title,
   data,
+  onEdit,
   className,
 }) => {
   const [drillPath, setDrillPath] = useState<DrillPath[]>([]);
-  const [hoveredSegment, setHoveredSegment] = useState<string | null>(null);
-
-  const currentData = useMemo(() => {
+  const [newName, setNewName] = useState("");
+  const [newValue, setNewValue] = useState<number>(0);
+  const currentObject = useMemo(() => {
     let current = data;
-    for (const pathItem of drillPath) {
-      if (
-        current[pathItem.name] &&
-        typeof current[pathItem.name] === "object"
-      ) {
-        current = current[pathItem.name] as Record<string, unknown>;
+    for (const p of drillPath) {
+      if (current[p.name] && typeof current[p.name] === "object") {
+        current = current[p.name] as Record<string, unknown>;
       }
     }
-    return processDataForChart(current);
+    return current as Record<string, unknown>;
   }, [data, drillPath]);
+  const pathNames = useMemo(() => drillPath.map((d) => d.name), [drillPath]);
+
+  const currentData = useMemo(() => {
+    return processDataForChart(currentObject);
+  }, [currentObject]);
 
   const chartData = useMemo(() => {
     return {
@@ -199,14 +215,6 @@ const InteractivePieChart: React.FC<InteractivePieChartProps> = ({
         animateRotate: true,
         animateScale: true,
         duration: 800,
-      },
-      onHover: (_: unknown, elements: Array<{ index: number }>) => {
-        if (elements.length > 0) {
-          const index = elements[0].index;
-          setHoveredSegment(currentData[index]?.name || null);
-        } else {
-          setHoveredSegment(null);
-        }
       },
       onClick: (_: unknown, elements: Array<{ index: number }>) => {
         if (elements.length > 0) {
@@ -369,69 +377,110 @@ const InteractivePieChart: React.FC<InteractivePieChartProps> = ({
         </Flex>
 
         <SimpleGrid mt={8} columns={{ base: 1, sm: 2, lg: 3, xl: 4 }} gap={{ base: 4, sm: 5 }} justifyItems="center">
-          {currentData.map((entry, index) => (
-            <motion.div
-              key={index}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              style={{ width: "100%" }}
-              onClick={() =>
-                entry.children &&
-                setDrillPath((prev) => [...prev, { name: entry.name, level: prev.length }])
-              }
-            >
-              <Flex
-                p={{ base: 4, sm: 5 }}
-                rounded={{ base: "lg", sm: "xl" }}
-                bg="gray.100"
-                borderWidth="1px"
-                borderColor="gray.200"
-                _dark={{ bg: "gray.700", borderColor: "gray.600" }}
-                align="center"
-                className={hoveredSegment === entry.name ? "scale-105" : undefined}
+          {currentData.map((entry, index) => {
+            const raw = currentObject[entry.name];
+            const isNumber = typeof raw === "number";
+            return (
+              <motion.div
+                key={index}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                style={{ width: "100%" }}
               >
-                <Box
-                  w={{ base: 4, sm: 5 }}
-                  h={{ base: 4, sm: 5 }}
-                  rounded="full"
-                  mr={{ base: 3, sm: 4 }}
-                  flexShrink={0}
-                  shadow="sm"
-                  style={{ backgroundColor: entry.color }}
-                />
-                <Box flex="1" minW={0}>
-                  <Text
-                    fontSize={{ base: "xs", sm: "sm" }}
-                    fontWeight="medium"
-                    noOfLines={1}
-                    color={hoveredSegment === entry.name ? "blue.700" : "gray.700"}
-                  >
-                    {entry.name}
-                  </Text>
-                  <Text fontSize="xs" color="gray.500" noOfLines={1} mt={{ base: 0.5, sm: 1 }}>
-                    {formatCurrency(entry.value)}
-                  </Text>
-                </Box>
-                {entry.children && (
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    style={{ marginLeft: "0.25rem" }}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
+                <Flex
+                  p={{ base: 4, sm: 5 }}
+                  rounded={{ base: "lg", sm: "xl" }}
+                  bg="gray.100"
+                  borderWidth="1px"
+                  borderColor="gray.200"
+                  _dark={{ bg: "gray.700", borderColor: "gray.600" }}
+                  align="center"
+                >
+                  <Box
+                    w={{ base: 4, sm: 5 }}
+                    h={{ base: 4, sm: 5 }}
+                    rounded="full"
+                    mr={{ base: 3, sm: 4 }}
+                    flexShrink={0}
+                    shadow="sm"
+                    style={{ backgroundColor: entry.color }}
+                  />
+                  <Box flex="1" minW={0} onClick={() => entry.children && setDrillPath((prev) => [...prev, { name: entry.name, level: prev.length }])}>
+                    <Text fontSize={{ base: "xs", sm: "sm" }} fontWeight="medium" noOfLines={1}>
+                      {entry.name}
+                    </Text>
+                    <Text fontSize="xs" color="gray.500" noOfLines={1} mt={{ base: 0.5, sm: 1 }}>
+                      {formatCurrency(entry.value)}
+                    </Text>
+                  </Box>
+                  {isNumber ? (
+                    <NumberInput
+                      size="sm"
+                      w="28"
+                      value={raw as number}
+                      onChange={(v) => onEdit && onEdit("set", [...pathNames, entry.name], undefined, Number(v))}
+                    >
+                      <NumberInputField />
+                      <NumberInputStepper>
+                        <NumberIncrementStepper />
+                        <NumberDecrementStepper />
+                      </NumberInputStepper>
+                    </NumberInput>
+                  ) : (
+                    <IconButton
+                      aria-label="open"
+                      variant="ghost"
+                      onClick={() => setDrillPath((prev) => [...prev, { name: entry.name, level: prev.length }])}
+                      icon={
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      }
                     />
-                  </svg>
-                )}
-              </Flex>
-            </motion.div>
-          ))}
+                  )}
+                  <IconButton
+                    aria-label="delete"
+                    size="sm"
+                    ml={2}
+                    onClick={() => onEdit && onEdit("delete", [...pathNames, entry.name])}
+                    icon={
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    }
+                  />
+                </Flex>
+              </motion.div>
+            );
+          })}
+          <Flex
+            p={4}
+            rounded={{ base: "lg", sm: "xl" }}
+            bg="gray.50"
+            borderWidth="1px"
+            borderColor="gray.200"
+            _dark={{ bg: "gray.700", borderColor: "gray.600" }}
+            align="center"
+            gap={2}
+          >
+            <Input size="sm" placeholder="名称" value={newName} onChange={(e) => setNewName(e.target.value)} />
+            <NumberInput size="sm" w="28" value={newValue} onChange={(v) => setNewValue(Number(v))}>
+              <NumberInputField />
+            </NumberInput>
+              <Button
+                size="sm"
+                onClick={() => {
+                  if (!newName) return;
+                  if (onEdit) {
+                    onEdit("add", pathNames, newName, newValue);
+                  }
+                  setNewName("");
+                  setNewValue(0);
+                }}
+              >
+              追加
+            </Button>
+          </Flex>
         </SimpleGrid>
       </Box>
     </motion.div>
