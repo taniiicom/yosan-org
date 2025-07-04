@@ -2,12 +2,23 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
+import {
+  Box,
+  Button,
+  Heading,
+  Text,
+  Flex,
+  Textarea,
+  SimpleGrid,
+  Stack,
+  chakra,
+} from "@chakra-ui/react";
 import defaultRevenue from "../data/japan/2025/revenue.json";
 import defaultExpenditure from "../data/japan/2025/expenditure.json";
 
 const BudgetChart = dynamic(() => import("../components/BudgetChart"), {
   ssr: false,
-  loading: () => <div className="text-center p-10">Loading...</div>,
+  loading: () => <Box textAlign="center" p={10}>Loading...</Box>,
 });
 
 interface Dataset {
@@ -72,66 +83,78 @@ export default function Home() {
   const expenditureTotal = calculateTotal(current.expenditure);
 
   return (
-    <div className="min-h-screen p-6 space-y-8">
-      <header className="text-center space-y-2">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-500 to-blue-500 bg-clip-text text-transparent">
-          国家予算シミュレータ
-        </h1>
-        <p className="text-gray-600 text-sm">
-          データセットを編集してグラフに反映できます
-        </p>
-      </header>
+    <Box minH="100vh" p={6}>
+      <Stack gap={8}>
+        <Box textAlign="center">
+          <Heading
+            bgGradient="linear(to-r, purple.500, blue.500)"
+            bgClip="text"
+            fontSize="3xl"
+            fontWeight="bold"
+          >
+            国家予算シミュレータ
+          </Heading>
+          <Text color="gray.600" fontSize="sm">
+            データセットを編集してグラフに反映できます
+          </Text>
+        </Box>
 
-      <div className="flex flex-wrap items-end gap-4">
-        <select
-          className="clay-button px-4 py-2"
-          value={selected}
-          onChange={(e) => setSelected(Number(e.target.value))}
-        >
-          {datasets.map((d, i) => (
-            <option key={i} value={i}>
-              {d.name}
-            </option>
-          ))}
-        </select>
-        <button className="clay-button px-4 py-2" onClick={addDataset}>
-          データセット追加
-        </button>
-        <button className="clay-button px-4 py-2" onClick={updateDataset}>
-          グラフ更新
-        </button>
-        {error && <span className="text-red-500 ml-4">{error}</span>}
-      </div>
+        <Flex flexWrap="wrap" align="flex-end" gap={4}>
+          <chakra.select
+            w="auto"
+            value={selected}
+            onChange={(e) => setSelected(Number(e.target.value))}
+            px={3}
+            py={2}
+            borderWidth="1px"
+            borderRadius="md"
+          >
+            {datasets.map((d, i) => (
+              <option key={i} value={i}>
+                {d.name}
+              </option>
+            ))}
+          </chakra.select>
+          <Button onClick={addDataset}>データセット追加</Button>
+          <Button onClick={updateDataset}>グラフ更新</Button>
+          {error && (
+            <Text color="red.500" ml={4} fontSize="sm">
+              {error}
+            </Text>
+          )}
+        </Flex>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <BudgetChart title="歳入" data={current.revenue} className="h-full" />
-        <BudgetChart title="歳出" data={current.expenditure} className="h-full" />
-      </div>
+        <SimpleGrid columns={{ base: 1, lg: 2 }} gap={6}>
+          <BudgetChart title="歳入" data={current.revenue} />
+          <BudgetChart title="歳出" data={current.expenditure} />
+        </SimpleGrid>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="clay-card">
-          <h2 className="font-semibold mb-2">Revenue JSON</h2>
-          <textarea
-            className="w-full h-64 p-2 clay-inset focus:outline-none"
-            value={revenueInput}
-            onChange={(e) => setRevenueInput(e.target.value)}
-          />
-          <p className="mt-2 text-sm text-right">
-            合計: {revenueTotal.toLocaleString()} 円
-          </p>
-        </div>
-        <div className="clay-card">
-          <h2 className="font-semibold mb-2">Expenditure JSON</h2>
-          <textarea
-            className="w-full h-64 p-2 clay-inset focus:outline-none"
-            value={expenditureInput}
-            onChange={(e) => setExpenditureInput(e.target.value)}
-          />
-          <p className="mt-2 text-sm text-right">
-            合計: {expenditureTotal.toLocaleString()} 円
-          </p>
-        </div>
-      </div>
-    </div>
+        <SimpleGrid columns={{ base: 1, lg: 2 }} gap={6}>
+          <Box p={4} borderWidth="1px" borderRadius="xl" bg="gray.50" _dark={{ bg: 'gray.700' }}>
+            <Text fontWeight="semibold" mb={2}>Revenue JSON</Text>
+            <Textarea
+              h="16rem"
+              value={revenueInput}
+              onChange={(e) => setRevenueInput(e.target.value)}
+            />
+            <Text mt={2} fontSize="sm" textAlign="right">
+              合計: {revenueTotal.toLocaleString()} 円
+            </Text>
+          </Box>
+          <Box p={4} borderWidth="1px" borderRadius="xl" bg="gray.50" _dark={{ bg: 'gray.700' }}>
+            <Text fontWeight="semibold" mb={2}>Expenditure JSON</Text>
+            <Textarea
+              h="16rem"
+              value={expenditureInput}
+              onChange={(e) => setExpenditureInput(e.target.value)}
+            />
+            <Text mt={2} fontSize="sm" textAlign="right">
+              合計: {expenditureTotal.toLocaleString()} 円
+            </Text>
+          </Box>
+        </SimpleGrid>
+      </Stack>
+    </Box>
   );
 }
+

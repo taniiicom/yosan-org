@@ -4,6 +4,16 @@ import React, { useState, useCallback, useMemo } from "react";
 import { Doughnut } from "react-chartjs-2";
 import { motion } from "framer-motion";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, Title } from "chart.js";
+import {
+  Box,
+  Flex,
+  Text,
+  IconButton,
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  SimpleGrid,
+} from "@chakra-ui/react";
 
 ChartJS.register(ArcElement, Tooltip, Legend, Title);
 
@@ -224,96 +234,192 @@ const InteractivePieChart: React.FC<InteractivePieChartProps> = ({
 
   return (
     <motion.div
-      className={`bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm ${className || ""}`}
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <div className="flex items-center justify-between mb-6 sm:mb-8">
-        <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-          <div
-            className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-500 text-white shadow"
-          >
-            <svg
-              className="w-5 h-5 sm:w-6 sm:h-6 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+      <Box
+        bg="white"
+        borderWidth="1px"
+        borderColor="gray.200"
+        _dark={{ bg: "gray.800", borderColor: "gray.700" }}
+        rounded="2xl"
+        p={6}
+        shadow="sm"
+        className={className}
+      >
+        <Flex justify="space-between" mb={{ base: 6, sm: 8 }}>
+          <Flex align="center" gap={{ base: 3, sm: 4 }} minW={0}>
+            <Flex
+              w={{ base: 10, sm: 12 }}
+              h={{ base: 10, sm: 12 }}
+              align="center"
+              justify="center"
+              bgGradient="linear(to-br, blue.500, purple.500)"
+              color="white"
+              rounded={{ base: "xl", sm: "2xl" }}
+              shadow="sm"
+              flexShrink={0}
             >
-              {title === "歳入" ? (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                />
-              ) : (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M20 12H4"
-                />
-              )}
-            </svg>
-          </div>
-          <h2 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent truncate">
-            {title}
-          </h2>
-        </div>
-        {drillPath.length > 0 && (
-          <motion.button
-            onClick={goBack}
-            className="p-3 sm:p-4 rounded-full text-white bg-gradient-to-br from-blue-500 to-purple-500 transition-all duration-200 flex items-center justify-center shadow"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            aria-label="戻る"
-          >
-            <div className="flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8">
               <svg
-                className="w-5 h-5 sm:w-6 sm:h-6"
-                fill="none"
-                stroke="gray"
+                width="24"
+                height="24"
                 viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                />
+                {title === "歳入" ? (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                  />
+                ) : (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M20 12H4"
+                  />
+                )}
               </svg>
-            </div>
-          </motion.button>
+            </Flex>
+            <Text
+              fontSize={{ base: "lg", sm: "xl", lg: "2xl", xl: "3xl" }}
+              fontWeight="bold"
+              bgGradient="linear(to-r, gray.800, gray.600)"
+              bgClip="text"
+              noOfLines={1}
+            >
+              {title}
+            </Text>
+          </Flex>
+          {drillPath.length > 0 && (
+            <IconButton
+              aria-label="戻る"
+              onClick={goBack}
+              icon={
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="gray">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                  />
+                </svg>
+              }
+              variant="solid"
+              colorScheme="purple"
+              rounded="full"
+              size="lg"
+              as={motion.button}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              shadow="sm"
+            />
+          )}
+        </Flex>
+
+        {drillPath.length > 0 && (
+          <motion.nav
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            transition={{ duration: 0.3 }}
+          >
+            <Breadcrumb
+              mb={{ base: 6, sm: 8 }}
+              px={3}
+              py={3}
+              rounded={{ base: "xl", sm: "2xl" }}
+              fontSize={{ base: "xs", sm: "sm" }}
+              bg="gray.50"
+              borderWidth="1px"
+              borderColor="gray.200"
+              _dark={{ bg: "gray.700", borderColor: "gray.600" }}
+              separator={<Text mx={2} color="gray.400">/</Text>}
+            >
+              <BreadcrumbItem>
+                <BreadcrumbLink onClick={() => setDrillPath([])}>トップ</BreadcrumbLink>
+              </BreadcrumbItem>
+              {drillPath.map((path, index) => (
+                <BreadcrumbItem key={index}>
+                  <BreadcrumbLink onClick={() => handleBreadcrumbClick(index)} maxW={{ base: 32, sm: 48 }} isTruncated>
+                    {path.name}
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+              ))}
+            </Breadcrumb>
+          </motion.nav>
         )}
-      </div>
 
-      <div className="m-4"></div>
-
-      {drillPath.length > 0 && (
-        <motion.nav
-          className="mb-6 sm:mb-8 p-3 sm:p-4 lg:p-5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl sm:rounded-2xl"
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: "auto" }}
-          transition={{ duration: 0.3 }}
+        <Flex
+          h={{ base: 72, sm: 80, lg: 96, xl: 420 }}
+          align="center"
+          justify="center"
+          bg="gray.50"
+          borderWidth="1px"
+          borderColor="gray.200"
+          _dark={{ bg: "gray.800", borderColor: "gray.700" }}
+          rounded={{ base: "xl", sm: "2xl" }}
         >
-          <ol className="flex items-center space-x-2 sm:space-x-3 text-xs sm:text-sm text-gray-600 flex-wrap">
-            <li>
-              <button
-                onClick={() => setDrillPath([])}
-                className="px-4 py-3 rounded-lg hover:bg-white/20 transition-all duration-200"
+          <Box w="full" h="full" p={{ base: 3, sm: 4, lg: 6 }}>
+            <Doughnut data={chartData} options={options} />
+          </Box>
+        </Flex>
+
+        <SimpleGrid mt={8} columns={{ base: 1, sm: 2, lg: 3, xl: 4 }} gap={{ base: 4, sm: 5 }} justifyItems="center">
+          {currentData.map((entry, index) => (
+            <motion.div
+              key={index}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              style={{ width: "100%" }}
+              onClick={() =>
+                entry.children &&
+                setDrillPath((prev) => [...prev, { name: entry.name, level: prev.length }])
+              }
+            >
+              <Flex
+                p={{ base: 4, sm: 5 }}
+                rounded={{ base: "lg", sm: "xl" }}
+                bg="gray.100"
+                borderWidth="1px"
+                borderColor="gray.200"
+                _dark={{ bg: "gray.700", borderColor: "gray.600" }}
+                align="center"
+                className={hoveredSegment === entry.name ? "scale-105" : undefined}
               >
-                トップ
-              </button>
-            </li>
-            {drillPath.map((path, index) => (
-              <React.Fragment key={index}>
-                <li className="text-gray-400 mx-2">
+                <Box
+                  w={{ base: 4, sm: 5 }}
+                  h={{ base: 4, sm: 5 }}
+                  rounded="full"
+                  mr={{ base: 3, sm: 4 }}
+                  flexShrink={0}
+                  shadow="sm"
+                  style={{ backgroundColor: entry.color }}
+                />
+                <Box flex="1" minW={0}>
+                  <Text
+                    fontSize={{ base: "xs", sm: "sm" }}
+                    fontWeight="medium"
+                    noOfLines={1}
+                    color={hoveredSegment === entry.name ? "blue.700" : "gray.700"}
+                  >
+                    {entry.name}
+                  </Text>
+                  <Text fontSize="xs" color="gray.500" noOfLines={1} mt={{ base: 0.5, sm: 1 }}>
+                    {formatCurrency(entry.value)}
+                  </Text>
+                </Box>
+                {entry.children && (
                   <svg
-                    className="w-4 h-4 sm:w-5 sm:h-5"
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
-                    viewBox="0 0 24 24"
+                    style={{ marginLeft: "0.25rem" }}
                   >
                     <path
                       strokeLinecap="round"
@@ -322,84 +428,15 @@ const InteractivePieChart: React.FC<InteractivePieChartProps> = ({
                       d="M9 5l7 7-7 7"
                     />
                   </svg>
-                </li>
-                <li>
-                  <button
-                    onClick={() => handleBreadcrumbClick(index)}
-                    className="px-4 py-3 rounded-lg hover:bg-white/20 transition-all duration-200 truncate max-w-32 sm:max-w-48 lg:max-w-none"
-                    title={path.name}
-                  >
-                    {path.name}
-                  </button>
-                </li>
-              </React.Fragment>
-            ))}
-          </ol>
-        </motion.nav>
-      )}
-
-      <div className="h-72 sm:h-80 lg:h-96 xl:h-[420px] flex items-center justify-center bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl sm:rounded-2xl">
-        <div className="w-full h-full p-3 sm:p-4 lg:p-6">
-          <Doughnut data={chartData} options={options} />
-        </div>
-      </div>
-
-      <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 justify-items-center">
-        {currentData.map((entry, index) => (
-          <motion.div
-            key={index}
-            className={`w-full flex items-center p-4 sm:p-5 rounded-lg sm:rounded-xl transition-all duration-200 cursor-pointer bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 ${
-              hoveredSegment === entry.name ? "scale-105" : ""
-            }`}
-            onClick={() =>
-              entry.children &&
-              setDrillPath((prev) => [
-                ...prev,
-                { name: entry.name, level: prev.length },
-              ])
-            }
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <div
-              className="w-4 h-4 sm:w-5 sm:h-5 rounded-full mr-3 sm:mr-4 flex-shrink-0 shadow-sm"
-              style={{ backgroundColor: entry.color }}
-            />
-            <div className="min-w-0 flex-1">
-              <span
-                className={`block text-xs sm:text-sm font-medium truncate transition-colors ${
-                  hoveredSegment === entry.name
-                    ? "text-blue-700"
-                    : "text-gray-700"
-                }`}
-                title={`${entry.name}: ${formatCurrency(entry.value)}`}
-              >
-                {entry.name}
-              </span>
-              <span className="block text-xs text-gray-500 truncate mt-0.5 sm:mt-1">
-                {formatCurrency(entry.value)}
-              </span>
-            </div>
-            {entry.children && (
-              <svg
-                className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 flex-shrink-0 ml-1 sm:ml-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            )}
-          </motion.div>
-        ))}
-      </div>
+                )}
+              </Flex>
+            </motion.div>
+          ))}
+        </SimpleGrid>
+      </Box>
     </motion.div>
   );
 };
 
 export default InteractivePieChart;
+
