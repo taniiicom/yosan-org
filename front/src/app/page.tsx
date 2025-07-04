@@ -16,8 +16,9 @@ import {
   DrawerContent,
   DrawerBody,
   IconButton,
-  RadioGroup,
-  Radio,
+  FormControl,
+  FormLabel,
+  Switch,
   useDisclosure,
   useBreakpointValue,
 } from "@chakra-ui/react";
@@ -278,15 +279,20 @@ export default function Home() {
           )}
           <Stack gap={8}>
             <Flex justify="flex-end">
-              <RadioGroup
-                value={editMode}
-                onChange={(v) => setEditMode(v as "view" | "edit")}
-              >
-                <Stack direction="row" spacing={4}>
-                  <Radio value="view">閲覧</Radio>
-                  <Radio value="edit">編集</Radio>
-                </Stack>
-              </RadioGroup>
+              <FormControl display="flex" alignItems="center" w="auto">
+                <FormLabel htmlFor="edit-mode" mb="0" fontSize="sm">
+                  編集モード
+                </FormLabel>
+                <Switch
+                  id="edit-mode"
+                  colorScheme="blue"
+                  isChecked={editMode === "edit"}
+                  onChange={(e) =>
+                    setEditMode(e.target.checked ? "edit" : "view")
+                  }
+                  ml={2}
+                />
+              </FormControl>
             </Flex>
             <Box textAlign="center">
           <Heading
