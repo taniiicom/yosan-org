@@ -16,6 +16,8 @@ import {
   DrawerContent,
   DrawerBody,
   IconButton,
+  RadioGroup,
+  Radio,
   useDisclosure,
   useBreakpointValue,
 } from "@chakra-ui/react";
@@ -123,6 +125,7 @@ export default function Home() {
     JSON.stringify(defaultExpenditure, null, 2)
   );
   const [error, setError] = useState<string>("");
+  const [editMode, setEditMode] = useState<"view" | "edit">("view");
 
   useEffect(() => {
     const ds = datasets[selected];
@@ -274,6 +277,17 @@ export default function Home() {
             />
           )}
           <Stack gap={8}>
+            <Flex justify="flex-end">
+              <RadioGroup
+                value={editMode}
+                onChange={(v) => setEditMode(v as "view" | "edit")}
+              >
+                <Stack direction="row" spacing={4}>
+                  <Radio value="view">閲覧</Radio>
+                  <Radio value="edit">編集</Radio>
+                </Stack>
+              </RadioGroup>
+            </Flex>
             <Box textAlign="center">
           <Heading
             bgGradient="linear(to-r, purple.500, blue.500)"
@@ -305,11 +319,13 @@ export default function Home() {
             title="歳入"
             data={current.revenue}
             onEdit={handleRevenueEdit}
+            editable={editMode === "edit"}
           />
           <BudgetChart
             title="歳出"
             data={current.expenditure}
             onEdit={handleExpenditureEdit}
+            editable={editMode === "edit"}
           />
         </SimpleGrid>
 

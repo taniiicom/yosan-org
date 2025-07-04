@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useRef } from "react";
 import { Doughnut } from "react-chartjs-2";
 import { motion } from "framer-motion";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, Title } from "chart.js";
@@ -20,6 +20,13 @@ import {
   NumberIncrementStepper,
   NumberDecrementStepper,
   Button,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
+  useDisclosure,
 } from "@chakra-ui/react";
 
 ChartJS.register(ArcElement, Tooltip, Legend, Title);
@@ -151,6 +158,7 @@ interface InteractivePieChartProps {
     name?: string,
     value?: number
   ) => void;
+  editable?: boolean;
   className?: string;
 }
 
@@ -158,11 +166,19 @@ const InteractivePieChart: React.FC<InteractivePieChartProps> = ({
   title,
   data,
   onEdit,
+  editable = true,
   className,
 }) => {
   const [drillPath, setDrillPath] = useState<DrillPath[]>([]);
   const [newName, setNewName] = useState("");
   const [newValue, setNewValue] = useState<number>(0);
+  const [deleteTarget, setDeleteTarget] = useState<string[] | null>(null);
+  const {
+    isOpen: confirmOpen,
+    onOpen: confirmOnOpen,
+    onClose: confirmOnClose,
+  } = useDisclosure();
+  const cancelRef = useRef<HTMLButtonElement>(null);
   const currentObject = useMemo(() => {
     let current = data;
     for (const p of drillPath) {
@@ -414,18 +430,30 @@ const InteractivePieChart: React.FC<InteractivePieChartProps> = ({
                     </Text>
                   </Box>
                   {isNumber ? (
-                    <NumberInput
-                      size="sm"
-                      w="28"
-                      value={raw as number}
-                      onChange={(v) => onEdit && onEdit("set", [...pathNames, entry.name], undefined, Number(v))}
-                    >
-                      <NumberInputField />
-                      <NumberInputStepper>
-                        <NumberIncrementStepper />
-                        <NumberDecrementStepper />
-                      </NumberInputStepper>
-                    </NumberInput>
+                    editable ? (
+                      <NumberInput
+                        size="sm"
+                        w="28"
+                        value={raw as number}
+                        onChange={(v) =>
+                          onEdit &&
+                          onEdit(
+                            "set",
+                            [...pathNames, entry.name],
+                            undefined,
+                            Number(v)
+                          )
+                        }
+                      >
+                        <NumberInputField />
+                        <NumberInputStepper>
+                          <NumberIncrementStepper />
+                          <NumberDecrementStepper />
+                        </NumberInputStepper>
+                      </NumberInput>
+                    ) : (
+                      <Text fontSize="sm">{formatCurrency(raw as number)}</Text>
+                    )
                   ) : (
                     <IconButton
                       aria-label="open"
@@ -438,35 +466,41 @@ const InteractivePieChart: React.FC<InteractivePieChartProps> = ({
                       }
                     />
                   )}
-                  <IconButton
-                    aria-label="delete"
-                    size="sm"
-                    ml={2}
-                    onClick={() => onEdit && onEdit("delete", [...pathNames, entry.name])}
-                    icon={
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    }
-                  />
+                  {editable && (
+                    <IconButton
+                      aria-label="delete"
+                      size="sm"
+                      ml={2}
+                      onClick={() => {
+                        setDeleteTarget([...pathNames, entry.name]);
+                        confirmOnOpen();
+                      }}
+                      icon={
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      }
+                    />
+                  )}
                 </Flex>
               </motion.div>
             );
           })}
-          <Flex
-            p={4}
-            rounded={{ base: "lg", sm: "xl" }}
-            bg="gray.50"
-            borderWidth="1px"
-            borderColor="gray.200"
-            _dark={{ bg: "gray.700", borderColor: "gray.600" }}
-            align="center"
-            gap={2}
-          >
-            <Input size="sm" placeholder="名称" value={newName} onChange={(e) => setNewName(e.target.value)} />
-            <NumberInput size="sm" w="28" value={newValue} onChange={(v) => setNewValue(Number(v))}>
-              <NumberInputField />
-            </NumberInput>
+          {editable && (
+            <Flex
+              p={4}
+              rounded={{ base: "lg", sm: "xl" }}
+              bg="gray.50"
+              borderWidth="1px"
+              borderColor="gray.200"
+              _dark={{ bg: "gray.700", borderColor: "gray.600" }}
+              align="center"
+              gap={2}
+            >
+              <Input size="sm" placeholder="名称" value={newName} onChange={(e) => setNewName(e.target.value)} />
+              <NumberInput size="sm" w="28" value={newValue} onChange={(v) => setNewValue(Number(v))}>
+                <NumberInputField />
+              </NumberInput>
               <Button
                 size="sm"
                 onClick={() => {
@@ -478,11 +512,46 @@ const InteractivePieChart: React.FC<InteractivePieChartProps> = ({
                   setNewValue(0);
                 }}
               >
-              追加
-            </Button>
-          </Flex>
+                追加
+              </Button>
+            </Flex>
+          )}
         </SimpleGrid>
       </Box>
+      <AlertDialog
+        leastDestructiveRef={cancelRef}
+        isOpen={confirmOpen}
+        onClose={() => {
+          confirmOnClose();
+          setDeleteTarget(null);
+        }}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              削除の確認
+            </AlertDialogHeader>
+            <AlertDialogBody>本当にこの項目を削除しますか？</AlertDialogBody>
+            <AlertDialogFooter>
+              <Button ref={cancelRef} onClick={confirmOnClose} mr={3}>
+                キャンセル
+              </Button>
+              <Button
+                colorScheme="red"
+                onClick={() => {
+                  if (onEdit && deleteTarget) {
+                    onEdit("delete", deleteTarget);
+                  }
+                  confirmOnClose();
+                  setDeleteTarget(null);
+                }}
+              >
+                削除
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </motion.div>
   );
 };
