@@ -259,7 +259,7 @@ export default function Home() {
             </DrawerContent>
           </Drawer>
         )}
-        <Box flex="1" p={6} ml={{ lg: 60 }}>
+        <Box flex="1" p={6}>
           {!isDesktop && (
             <IconButton
               aria-label="メニュー"
