@@ -223,6 +223,7 @@ export default function Home() {
       bg="gray.50"
       _dark={{ bg: "gray.800" }}
       h="full"
+      minH={{ base: "auto", lg: "100vh" }}
     >
       <Heading size="sm" mb={4}>
         データセット
