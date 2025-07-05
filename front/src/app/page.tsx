@@ -19,10 +19,16 @@ import {
   FormControl,
   FormLabel,
   Switch,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  PopoverArrow,
+  PopoverBody,
+  ButtonGroup,
   useDisclosure,
   useBreakpointValue,
 } from "@chakra-ui/react";
-import { FaGithub } from "react-icons/fa";
+import { FaGithub, FaHeart, FaHandHoldingUsd, FaStar } from "react-icons/fa";
 import defaultRevenue from "../data/japan/2025/revenue.json";
 import defaultExpenditure from "../data/japan/2025/expenditure.json";
 import Footer from "../components/Footer";
@@ -280,6 +286,37 @@ export default function Home() {
               />
             )}
             <Box flex="1" />
+            <Popover placement="bottom-end">
+              <PopoverTrigger>
+                <Button leftIcon={<FaHeart />} variant="outline" colorScheme="pink">
+                  支援する
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent w="auto">
+                <PopoverArrow />
+                <PopoverBody>
+                  <ButtonGroup size="sm" isAttached variant="solid" gap={2}>
+                    <Button
+                      as="a"
+                      href="https://paypal.me/taniiicom?country.x=JP&locale.x=ja_JP"
+                      leftIcon={<FaHandHoldingUsd />}
+                      colorScheme="pink"
+                    >
+                      1回限り
+                    </Button>
+                    <Button
+                      as="a"
+                      href="https://taniiicom.fanbox.cc/plans"
+                      leftIcon={<FaStar />}
+                      colorScheme="pink"
+                      variant="outline"
+                    >
+                      スポンサーになる
+                    </Button>
+                  </ButtonGroup>
+                </PopoverBody>
+              </PopoverContent>
+            </Popover>
             <Button
               as="a"
               href="https://github.com/taniiicom/budget-simulator"
