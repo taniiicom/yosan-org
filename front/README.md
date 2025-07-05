@@ -55,5 +55,5 @@ service cloud.firestore {
 }
 ```
 
-4. プロジェクトルートの `.env.example` を `.env` にコピーし、Firebase の各種キーを設定します。
-
+4. プロジェクトルートの `.env.example` を `.env` にコピーします。
+5. Firebase コンソールの **プロジェクト設定** → **全般** で Web アプリを登録し、表示される **Firebase SDK snippet** の `config` オブジェクトから各種キーを取得して `.env` に記入します。これらの API キーは公開されても問題ありませんが、Firestore のルールで適切にアクセス制限を行ってください。
