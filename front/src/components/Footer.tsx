@@ -6,8 +6,22 @@ import {
   Image,
   SimpleGrid,
   Stack,
+  Button,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  PopoverArrow,
+  PopoverBody,
+  ButtonGroup,
 } from '@chakra-ui/react'
-import { FaTwitter, FaGithub, FaInstagram } from 'react-icons/fa'
+import {
+  FaTwitter,
+  FaGithub,
+  FaInstagram,
+  FaHeart,
+  FaHandHoldingUsd,
+  FaStar,
+} from 'react-icons/fa'
 
 export default function Footer() {
   return (
@@ -103,7 +117,54 @@ export default function Footer() {
             </Box>
           </Box>
         </SimpleGrid>
-        <Text mt={4} textAlign="center">
+        <Flex mt={4} mb={2} justify="center" gap={4}>
+          <Popover placement="top">
+            <PopoverTrigger>
+              <Button leftIcon={<FaHeart />} variant="outline" colorScheme="pink">
+                支援する
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent w="auto">
+              <PopoverArrow />
+              <PopoverBody>
+                <ButtonGroup size="sm" isAttached variant="solid" gap={2}>
+                  <Button
+                    as="a"
+                    href="https://paypal.me/taniiicom?country.x=JP&locale.x=ja_JP"
+                    leftIcon={<FaHandHoldingUsd />}
+                    colorScheme="pink"
+                  >
+                    1回限り
+                  </Button>
+                  <Button
+                    as="a"
+                    href="https://taniiicom.fanbox.cc/plans"
+                    leftIcon={<FaStar />}
+                    colorScheme="pink"
+                    variant="outline"
+                  >
+                    スポンサーになる
+                  </Button>
+                </ButtonGroup>
+              </PopoverBody>
+            </PopoverContent>
+          </Popover>
+          <Button
+            as="a"
+            href="https://github.com/taniiicom/budget-simulator"
+            target="_blank"
+            leftIcon={<FaGithub />}
+            variant="outline"
+            sx={{
+              background:
+                'linear-gradient(white, white) padding-box, linear-gradient(to right, #f56565, #805ad5, #4299e1) border-box',
+              border: '2px solid transparent',
+            }}
+          >
+            Open Source
+          </Button>
+        </Flex>
+        <Text mt={2} textAlign="center">
           ©{' '}
           <Link href="https://taniii.com" isExternal>
             Taniii
