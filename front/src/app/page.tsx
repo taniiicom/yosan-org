@@ -222,7 +222,7 @@ export default function Home() {
       borderRightWidth="1px"
       bg="gray.50"
       _dark={{ bg: "gray.800" }}
-      h="full"
+      minH="100vh"
     >
       <Heading size="sm" mb={4}>
         データセット
