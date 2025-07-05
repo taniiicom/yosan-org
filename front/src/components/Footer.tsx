@@ -19,17 +19,25 @@ export default function Footer() {
         bg="gray.50"
         _dark={{ bg: "gray.800" }}
       >
-        <Text>
-          政府の予算書・決算書データベース (
-          <Link href="https://www.bb.mof.go.jp/hdocs/bxsselect.html" isExternal>
-            https://www.bb.mof.go.jp/hdocs/bxsselect.html
-          </Link>
-          ) をもとに,
-          <Link href="https://taniii.com" isExternal>
-            {' '}Taniii
-          </Link>
-          {' '}が作成
-        </Text>
+        <Stack spacing={2} fontSize="sm">
+          <Text>
+            日本の国家予算データについては, 政府の予算書・決算書データベース (
+            <Link
+              href="https://www.bb.mof.go.jp/hdocs/bxsselect.html"
+              isExternal
+            >
+              https://www.bb.mof.go.jp/hdocs/bxsselect.html
+            </Link>
+            ) をもとに,
+            <Link href="https://taniii.com" isExternal>
+              {' '}Taniii
+            </Link>
+            {' '}が機械判読に適した形式にオープンデータ化し, 可視化したもの
+          </Text>
+          <Text>
+            各ユーザの作成・提案した予算データやコメントについては, ユーザにより作成されたコンテンツであり, その正しさや不適切でないことを, 本サービスも, サービス作成者・運営者も保証せず, 意見に対する同意も不同意も意図しません
+          </Text>
+        </Stack>
       </Box>
       <Box
         borderTopWidth="1px"
