@@ -22,6 +22,7 @@ import {
   useDisclosure,
   useBreakpointValue,
 } from "@chakra-ui/react";
+import { FaGithub } from "react-icons/fa";
 import defaultRevenue from "../data/japan/2025/revenue.json";
 import defaultExpenditure from "../data/japan/2025/expenditure.json";
 import Footer from "../components/Footer";
@@ -265,19 +266,34 @@ export default function Home() {
           </Drawer>
         )}
         <Box flex="1" p={6}>
-          {!isDesktop && (
-            <IconButton
-              aria-label="メニュー"
-              icon={
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M2 4h16M2 10h16M2 16h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                </svg>
-              }
-              onClick={onOpen}
+          <Flex align="center" mb={4} gap={2}>
+            {!isDesktop && (
+              <IconButton
+                aria-label="メニュー"
+                icon={
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M2 4h16M2 10h16M2 16h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  </svg>
+                }
+                onClick={onOpen}
+                variant="outline"
+              />
+            )}
+            <Button
+              as="a"
+              href="https://github.com/taniiicom/budget-simulator"
+              target="_blank"
+              leftIcon={<FaGithub />}
               variant="outline"
-              mb={4}
-            />
-          )}
+              sx={{
+                background:
+                  "linear-gradient(white, white) padding-box, linear-gradient(to right, #f56565, #805ad5, #4299e1) border-box",
+                border: "2px solid transparent",
+              }}
+            >
+              OSS
+            </Button>
+          </Flex>
           <Stack gap={8}>
             <Box textAlign="center">
           <Heading
