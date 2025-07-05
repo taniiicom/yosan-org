@@ -25,10 +25,19 @@ import {
   PopoverArrow,
   PopoverBody,
   ButtonGroup,
+  Avatar,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
   useDisclosure,
   useBreakpointValue,
 } from "@chakra-ui/react";
-import { FaGithub, FaHeart, FaHandHoldingUsd, FaStar } from "react-icons/fa";
+import { FaGithub, FaHeart, FaHandHoldingUsd, FaStar, FaUserCircle } from "react-icons/fa";
+import { useRouter } from "next/navigation";
+import { collection, addDoc, getDocs, query, limit, serverTimestamp } from "firebase/firestore";
+import { db } from "../lib/firebase";
+import { useAuth } from "@/lib/auth";
 import defaultRevenue from "../data/japan/2025/revenue.json";
 import defaultExpenditure from "../data/japan/2025/expenditure.json";
 import Footer from "../components/Footer";
@@ -111,6 +120,8 @@ const addAtPath = (
 };
 
 export default function Home() {
+  const { user, logout } = useAuth();
+  const router = useRouter();
   const [datasets, setDatasets] = useState<Dataset[]>([
     { name: "Japan 2025", revenue: defaultRevenue, expenditure: defaultExpenditure },
   ]);
@@ -126,6 +137,29 @@ export default function Home() {
       } catch {}
     }
   }, []);
+
+  useEffect(() => {
+    const fetchCommunity = async () => {
+      try {
+        const q = query(collection(db, 'budgets'), limit(10));
+        const snap = await getDocs(q);
+        type FirestoreBudget = { name: string; revenue: string; expenditure: string };
+        const arr: Dataset[] = snap.docs.map((d) => {
+          const data = d.data() as FirestoreBudget;
+          return {
+            name: data.name,
+            revenue: JSON.parse(data.revenue),
+            expenditure: JSON.parse(data.expenditure),
+          };
+        });
+        arr.sort(() => Math.random() - 0.5);
+        setCommunity(arr.slice(0, 3));
+      } catch {
+        // ignore
+      }
+    };
+    fetchCommunity();
+  }, []);
   const [selected, setSelected] = useState(0);
   const [revenueInput, setRevenueInput] = useState(
     JSON.stringify(defaultRevenue, null, 2)
@@ -135,6 +169,7 @@ export default function Home() {
   );
   const [error, setError] = useState<string>("");
   const [editMode, setEditMode] = useState<"view" | "edit">("view");
+  const [community, setCommunity] = useState<Dataset[]>([]);
 
   useEffect(() => {
     const ds = datasets[selected];
@@ -195,16 +230,35 @@ export default function Home() {
     });
   };
 
-  const saveDataset = () => {
+  const saveDataset = async () => {
     const name = prompt("データセット名", current.name);
     if (!name) return;
+    const description = prompt("説明") || "";
     const newDs = { name, revenue: current.revenue, expenditure: current.expenditure };
-    const stored = localStorage.getItem("savedDatasets");
-    const arr = stored ? JSON.parse(stored) : [];
-    arr.push(newDs);
-    localStorage.setItem("savedDatasets", JSON.stringify(arr));
-    setDatasets((prev) => [...prev, newDs]);
-    setSelected(datasets.length);
+    if (user) {
+      try {
+        const docRef = await addDoc(collection(db, 'budgets'), {
+          userId: user.uid,
+          name,
+          description,
+          revenue: JSON.stringify(current.revenue),
+          expenditure: JSON.stringify(current.expenditure),
+          createdAt: serverTimestamp(),
+        });
+        const url = `${window.location.origin}/share/${docRef.id}`;
+        await navigator.clipboard.writeText(url);
+        alert('共有リンクをコピーしました');
+      } catch {
+        alert('保存に失敗しました');
+      }
+    } else {
+      const stored = localStorage.getItem("savedDatasets");
+      const arr = stored ? JSON.parse(stored) : [];
+      arr.push(newDs);
+      localStorage.setItem("savedDatasets", JSON.stringify(arr));
+      setDatasets((prev) => [...prev, newDs]);
+      setSelected(datasets.length);
+    }
   };
 
   const current = datasets[selected];
@@ -253,6 +307,29 @@ export default function Home() {
       >
         追加
       </Button>
+      {community.length > 0 && (
+        <>
+          <Heading size="sm" mt={6} mb={2}>
+            みんなの予算案
+          </Heading>
+          <Stack spacing={2}>
+            {community.map((d, i) => (
+              <Button
+                key={`c-${i}`}
+                variant="ghost"
+                justifyContent="flex-start"
+                onClick={() => {
+                  setDatasets((prev) => [...prev, d]);
+                  setSelected(datasets.length);
+                  if (onSelect) onSelect();
+                }}
+              >
+                {d.name}
+              </Button>
+            ))}
+          </Stack>
+        </>
+      )}
     </Box>
   );
 
@@ -331,6 +408,18 @@ export default function Home() {
             >
               Open Source
             </Button>
+            {user ? (
+              <Menu>
+                <MenuButton as={IconButton} icon={<Avatar size="sm" src={user.photoURL || undefined} />} variant="outline" />
+                <MenuList>
+                  <MenuItem onClick={logout}>ログアウト</MenuItem>
+                </MenuList>
+              </Menu>
+            ) : (
+              <Button leftIcon={<FaUserCircle />} onClick={() => router.push('/login')}>
+                ログイン
+              </Button>
+            )}
           </Flex>
           <Stack gap={8}>
             <Box textAlign="center">
