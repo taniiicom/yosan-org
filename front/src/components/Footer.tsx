@@ -34,6 +34,7 @@ export default function Footer() {
         _dark={{ bg: "gray.800" }}
       >
         <Stack spacing={2} fontSize="sm">
+          <Text>このサービスは, 特定の政党や候補者を支持しません</Text>
           <Text>
             日本の国家予算データについては, 政府の予算書・決算書データベース (
             <Link
@@ -47,7 +48,8 @@ export default function Footer() {
               {" "}
               Taniii
             </Link>{" "}
-            が機械判読に適した形式にオープンデータ化し, 可視化したもの
+            が機械判読に適した形式にオープンデータ化し,
+            インタラクティブなグラフを用いて可視化したものです
           </Text>
           <Text>
             各ユーザの作成・提案した予算データやコメントについては,
