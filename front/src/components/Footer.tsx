@@ -1,4 +1,12 @@
-import { Box, Text, Link } from '@chakra-ui/react'
+import {
+  Box,
+  Text,
+  Link,
+  Flex,
+  Image,
+  Stack,
+} from '@chakra-ui/react'
+import { FaTwitter, FaGithub, FaInstagram } from 'react-icons/fa'
 
 export default function Footer() {
   return (
@@ -24,20 +32,59 @@ export default function Footer() {
       </Box>
       <Box
         borderTopWidth="1px"
-        p={3}
-        textAlign="center"
-        bg="gray.100"
+        p={4}
+        bg="#faf7f3"
         _dark={{ bg: "gray.700" }}
       >
-        <Text>
-          ©{' '}
-          <Link href="https://taniii.com" isExternal>
-            Taniii
-          </Link>{' '}
-          <Link href="https://x.com/taniiicom" isExternal>
-            @taniiicom
-          </Link>
-        </Text>
+        <Flex
+          direction={{ base: "column", md: "row" }}
+          justify="space-between"
+          gap={4}
+        >
+          <Box flex="1">
+            <Text fontWeight="bold" mb={1}>
+              あとがき
+            </Text>
+            <Text fontSize="sm">
+              私たちは，自分自身の月の収入や支出，「食費にいくら使っているか」とかを大体把握していると思います. しかし, 国の収入と支出はどうでしょうか?
+            </Text>
+          </Box>
+          <Box textAlign={{ base: "center", md: "right" }} flexShrink={0}>
+            <Text fontSize="sm" mb={2}>
+              designed by
+            </Text>
+            <Box
+              borderWidth="1px"
+              borderRadius="md"
+              p={3}
+              w={{ base: "full", md: "12rem" }}
+            >
+              <Stack spacing={2} align="center">
+                <Image
+                  src="https://taniii.com/img/icon/taniiicom_icon.jpeg"
+                  alt="Taniii"
+                  boxSize="48px"
+                  borderRadius="full"
+                />
+                <Text fontWeight="bold">Taniii</Text>
+                <Flex gap={2}>
+                  <Link href="https://x.com/taniiicom" isExternal>
+                    <FaTwitter />
+                  </Link>
+                  <Link href="https://github.com/taniiicom" isExternal>
+                    <FaGithub />
+                  </Link>
+                  <Link href="https://www.instagram.com/taniiicom" isExternal>
+                    <FaInstagram />
+                  </Link>
+                </Flex>
+                <Text fontSize="xs" color="gray.500" textAlign="center">
+                  Concept Designer ・ Freelance Web Developer
+                </Text>
+              </Stack>
+            </Box>
+          </Box>
+        </Flex>
       </Box>
     </Box>
   )
