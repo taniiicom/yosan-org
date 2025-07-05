@@ -34,3 +34,26 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Firebase / Firestore 設定
+
+このアプリではユーザー認証とデータ保存に Firebase を使用します。実行前に次の手順を行ってください。
+
+1. Firebase プロジェクトを作成し、Authentication で **Google** と **Twitter** のログイン方法を有効化します。
+2. Cloud Firestore を有効化して `budgets` コレクションを作成します。
+3. セキュリティルールを以下のように設定します。
+
+```text
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /budgets/{id} {
+      allow read: if true;
+      allow create: if request.auth != null;
+    }
+  }
+}
+```
+
+4. プロジェクトルートの `.env.example` を `.env` にコピーし、Firebase の各種キーを設定します。
+
