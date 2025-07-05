@@ -24,6 +24,7 @@ import {
 } from "@chakra-ui/react";
 import defaultRevenue from "../data/japan/2025/revenue.json";
 import defaultExpenditure from "../data/japan/2025/expenditure.json";
+import Footer from "../components/Footer";
 
 const BudgetChart = dynamic(() => import("../components/BudgetChart"), {
   ssr: false,
@@ -249,8 +250,8 @@ export default function Home() {
   );
 
   return (
-    <Box minH="100vh">
-      <Flex h="full">
+    <Box minH="100vh" display="flex" flexDirection="column">
+      <Flex flex="1">
         {isDesktop ? (
           <SidebarContent />
         ) : (
@@ -361,6 +362,7 @@ export default function Home() {
       </Stack>
         </Box>
       </Flex>
+      <Footer />
     </Box>
   );
 }
