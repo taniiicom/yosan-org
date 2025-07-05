@@ -278,22 +278,6 @@ export default function Home() {
             />
           )}
           <Stack gap={8}>
-            <Flex justify="flex-end">
-              <FormControl display="flex" alignItems="center" w="auto">
-                <FormLabel htmlFor="edit-mode" mb="0" fontSize="sm">
-                  編集モード
-                </FormLabel>
-                <Switch
-                  id="edit-mode"
-                  colorScheme="blue"
-                  isChecked={editMode === "edit"}
-                  onChange={(e) =>
-                    setEditMode(e.target.checked ? "edit" : "view")
-                  }
-                  ml={2}
-                />
-              </FormControl>
-            </Flex>
             <Box textAlign="center">
           <Heading
             bgGradient="linear(to-r, purple.500, blue.500)"
@@ -308,16 +292,31 @@ export default function Home() {
           </Text>
         </Box>
 
-        <Flex flexWrap="wrap" align="flex-end" gap={4}>
+        <Flex flexWrap="wrap" align="center" gap={4}>
           <Button onClick={updateDataset}>グラフ更新</Button>
           <Button onClick={saveDataset} colorScheme="green" variant="outline">
             保存
           </Button>
           {error && (
-            <Text color="red.500" ml={4} fontSize="sm">
+            <Text color="red.500" fontSize="sm">
               {error}
             </Text>
           )}
+          <Box flex="1" />
+          <FormControl display="flex" alignItems="center" w="auto">
+            <FormLabel htmlFor="edit-mode" mb="0" fontSize="sm">
+              編集モード
+            </FormLabel>
+            <Switch
+              id="edit-mode"
+              colorScheme="blue"
+              isChecked={editMode === "edit"}
+              onChange={(e) =>
+                setEditMode(e.target.checked ? "edit" : "view")
+              }
+              ml={2}
+            />
+          </FormControl>
         </Flex>
 
         <SimpleGrid columns={{ base: 1, lg: 2 }} gap={6}>

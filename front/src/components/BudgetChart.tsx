@@ -392,7 +392,12 @@ const InteractivePieChart: React.FC<InteractivePieChartProps> = ({
           </Box>
         </Flex>
 
-        <SimpleGrid mt={8} columns={{ base: 1, sm: 2, lg: 3, xl: 4 }} gap={{ base: 4, sm: 5 }} justifyItems="center">
+        <SimpleGrid
+          mt={8}
+          columns={{ base: 1, sm: 2, md: 2, lg: 2, xl: 2 }}
+          gap={{ base: 4, sm: 5 }}
+          justifyItems="center"
+        >
           {currentData.map((entry, index) => {
             const raw = currentObject[entry.name];
             const isNumber = typeof raw === "number";
