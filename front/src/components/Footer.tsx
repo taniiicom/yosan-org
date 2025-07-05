@@ -45,8 +45,8 @@ export default function Footer() {
               私たちは，自分自身の月の収入や支出，「食費にいくら使っているか」とかを大体把握していると思います. しかし, 国の収入と支出はどうでしょうか?
             </Text>
           </Box>
-          <Box textAlign={{ base: "center", md: "right" }}>
-            <Text fontSize="sm" mb={2}>
+          <Box textAlign="left">
+            <Text fontSize="sm" mb={2} textAlign="left">
               designed by
             </Text>
             <Box
