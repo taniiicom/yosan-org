@@ -266,7 +266,7 @@ export default function Home() {
           </Drawer>
         )}
         <Box flex="1" p={6}>
-          <Flex align="center" mb={4} gap={2}>
+          <Flex align="center" mb={4} gap={2} justify="space-between">
             {!isDesktop && (
               <IconButton
                 aria-label="メニュー"
@@ -279,6 +279,7 @@ export default function Home() {
                 variant="outline"
               />
             )}
+            <Box flex="1" />
             <Button
               as="a"
               href="https://github.com/taniiicom/budget-simulator"
@@ -291,7 +292,7 @@ export default function Home() {
                 border: "2px solid transparent",
               }}
             >
-              OSS
+              Open Source
             </Button>
           </Flex>
           <Stack gap={8}>
