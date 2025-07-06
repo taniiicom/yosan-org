@@ -67,3 +67,20 @@ service cloud.firestore {
    | revenue      | string    | 予算歳入 JSON を文字列化したもの |
    | expenditure  | string    | 予算歳出 JSON を文字列化したもの |
    | createdAt    | timestamp | `serverTimestamp()` を設定        |
+
+コメントやいいねはデータ作成者以外のユーザーも行えるよう、以下のルールで
+`comments` と `likes` フィールドの更新を許可します。
+
+```text
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /budgets/{id} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['comments', 'likes']);
+    }
+  }
+}
+```
