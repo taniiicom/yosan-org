@@ -32,6 +32,7 @@ import {
   MenuItem,
   useDisclosure,
   useBreakpointValue,
+  useToast,
   Modal,
   ModalOverlay,
   ModalContent,
@@ -258,6 +259,7 @@ export default function Home() {
 
   const [saveName, setSaveName] = useState('');
   const [saveDesc, setSaveDesc] = useState('');
+  const toast = useToast();
 
   const handleSave = async (name: string, description: string) => {
     const newDs: Dataset = {
@@ -279,9 +281,9 @@ export default function Home() {
         const url = `${window.location.origin}/share/${docRef.id}`;
         newDs.shareUrl = url;
         await navigator.clipboard.writeText(url);
-        alert('共有リンクをコピーしました');
+        toast({ description: '共有リンクをコピーしました', status: 'success' });
       } catch {
-        alert('保存に失敗しました');
+        toast({ description: '保存に失敗しました', status: 'error' });
         return;
       }
     } else {
@@ -301,9 +303,9 @@ export default function Home() {
     const url = datasets[selected].shareUrl;
     if (url) {
       navigator.clipboard.writeText(url);
-      alert('共有リンクをコピーしました');
+      toast({ description: '共有リンクをコピーしました', status: 'success' });
     } else {
-      alert('まず保存してください');
+      toast({ description: 'まず保存してください', status: 'info' });
     }
   };
 
