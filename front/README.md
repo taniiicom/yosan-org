@@ -40,16 +40,27 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 このアプリではユーザー認証とデータ保存に Firebase を使用します。実行前に次の手順を行ってください。
 
 1. Firebase プロジェクトを作成し、Authentication で **Google** と **Twitter** のログイン方法を有効化します。
-2. Cloud Firestore を有効化し、データベース ID を `yosanorg` に設定した上で `budgets` コレクションを作成します。
+2. Cloud Firestore を有効化し、データベース ID を `yosanorg` に設定した上で `budgets`、`comments`、`likes` の各コレクションを作成します。
 3. セキュリティルールを以下のように設定します。
 
 ```text
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /budgets/{id} {
+    match /budgets/{budgetId} {
       allow read: if true;
-      allow create: if request.auth != null;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+    match /comments/{commentId} {
+      allow read: if true;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+    match /likes/{likeId} {
+      allow read: if true;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow delete: if request.auth != null && request.auth.uid == resource.data.userId;
     }
   }
 }
@@ -57,9 +68,11 @@ service cloud.firestore {
 
 4. プロジェクトルートの `.env.example` を `.env` にコピーします。
 5. Firebase コンソールの **プロジェクト設定** → **全般** で Web アプリを登録し、表示される **Firebase SDK snippet** の `config` オブジェクトから各種キーを取得して `.env` に記入します。これらの API キーは公開されても問題ありませんが、Firestore のルールで適切にアクセス制限を行ってください。
-6. コレクションを作成するときは最初のドキュメントを追加する必要があります。`budgets` コレクションのドキュメント構造は次のとおりです（`createdAt` は `FieldValue.serverTimestamp()` を設定してください）。
+6. コレクションを作成するときは最初のドキュメントを追加する必要があります。各コレクションのドキュメント例は次のとおりです（`createdAt` は `FieldValue.serverTimestamp()` を設定してください）。
 
-   | フィールド名  | 型        | 説明                             |
+   **budgets**
+
+   | フィールド名 | 型        | 説明                             |
    | ------------ | --------- | -------------------------------- |
    | userId       | string    | Firebase Authentication の UID   |
    | name         | string    | データセット名                   |
@@ -68,19 +81,22 @@ service cloud.firestore {
    | expenditure  | string    | 予算歳出 JSON を文字列化したもの |
    | createdAt    | timestamp | `serverTimestamp()` を設定        |
 
-コメントやいいねはデータ作成者以外のユーザーも行えるよう、以下のルールで
-`comments` と `likes` フィールドの更新を許可します。
+   **comments**
 
-```text
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /budgets/{id} {
-      allow read: if true;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['comments', 'likes']);
-    }
-  }
-}
-```
+   | フィールド名 | 型        | 説明                               |
+   | ------------ | --------- | ---------------------------------- |
+   | budgetId     | string    | 紐づく budget ドキュメント ID       |
+   | userId       | string    | コメントしたユーザーの UID         |
+   | username     | string    | 表示名                             |
+   | text         | string    | コメント本文                       |
+   | createdAt    | timestamp | `serverTimestamp()` を設定          |
+
+   **likes**
+
+   | フィールド名 | 型     | 説明                         |
+   | ------------ | ------ | ---------------------------- |
+   | budgetId     | string | 紐づく budget ドキュメント ID |
+   | userId       | string | いいねしたユーザーの UID     |
+   | createdAt    | timestamp | `serverTimestamp()` を設定    |
+
+コメントやいいねはデータ作成者以外のユーザーも行えるよう、上記のルールを設定します。

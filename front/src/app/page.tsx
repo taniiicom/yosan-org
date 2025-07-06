@@ -58,10 +58,8 @@ import {
   limit,
   serverTimestamp,
   orderBy,
-  updateDoc,
-  doc,
-  arrayUnion,
-  arrayRemove,
+  where,
+  deleteDoc,
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useAuth } from "@/lib/auth";
@@ -213,22 +211,37 @@ export default function Home() {
           description?: string;
           revenue: string;
           expenditure: string;
-          comments?: Comment[];
-          likedBy?: string[];
         };
-        const arr: Dataset[] = snap.docs.map((d) => {
-          const data = d.data() as FirestoreBudget;
-          return {
-            name: data.name,
-            description: data.description,
-            revenue: JSON.parse(data.revenue),
-            expenditure: JSON.parse(data.expenditure),
-            shareUrl: `${window.location.origin}/idea/${d.id}`,
-            comments: data.comments || [],
-            likedBy: data.likedBy || [],
-            likes: data.likedBy ? data.likedBy.length : 0,
-          };
-        });
+        const arr: Dataset[] = await Promise.all(
+          snap.docs.map(async (d) => {
+            const data = d.data() as FirestoreBudget;
+            const commentsSnap = await getDocs(
+              query(
+                collection(db, 'comments'),
+                where('budgetId', '==', d.id),
+                orderBy('createdAt', 'asc')
+              )
+            );
+            const likesSnap = await getDocs(
+              query(collection(db, 'likes'), where('budgetId', '==', d.id))
+            );
+            const comments: Comment[] = commentsSnap.docs.map((c) => ({
+              username: c.data().username as string,
+              text: c.data().text as string,
+            }));
+            const likedBy = likesSnap.docs.map((l) => l.data().userId as string);
+            return {
+              name: data.name,
+              description: data.description,
+              revenue: JSON.parse(data.revenue),
+              expenditure: JSON.parse(data.expenditure),
+              shareUrl: `${window.location.origin}/idea/${d.id}`,
+              comments,
+              likedBy,
+              likes: likedBy.length,
+            };
+          })
+        );
         setCommunity(arr);
       } catch {
         // ignore
@@ -337,8 +350,12 @@ export default function Home() {
     if (datasets[selected].shareUrl) {
       const id = datasets[selected].shareUrl?.split('/').pop();
       try {
-        await updateDoc(doc(db, 'budgets', id!), {
-          comments: arrayUnion(comment),
+        await addDoc(collection(db, 'comments'), {
+          budgetId: id,
+          userId: user.uid,
+          username: comment.username,
+          text: comment.text,
+          createdAt: serverTimestamp(),
         });
       } catch {
         // ignore
@@ -369,9 +386,20 @@ export default function Home() {
     if (cur.shareUrl) {
       const id = cur.shareUrl?.split('/').pop();
       try {
-        await updateDoc(doc(db, 'budgets', id!), {
-          likedBy: already ? arrayRemove(uid) : arrayUnion(uid),
-        });
+        const likeQuery = query(
+          collection(db, 'likes'),
+          where('budgetId', '==', id),
+          where('userId', '==', uid)
+        );
+        const likeSnap = await getDocs(likeQuery);
+        if (likeSnap.empty) {
+          await addDoc(collection(db, 'likes'), {
+            budgetId: id,
+            userId: uid,
+          });
+        } else {
+          await deleteDoc(likeSnap.docs[0].ref);
+        }
       } catch {
         // ignore
       }
@@ -401,9 +429,6 @@ export default function Home() {
           description,
           revenue: JSON.stringify(current.revenue),
           expenditure: JSON.stringify(current.expenditure),
-          comments: [],
-          likedBy: [],
-          likes: 0,
           createdAt: serverTimestamp(),
         });
         const url = `${window.location.origin}/idea/${docRef.id}`;
