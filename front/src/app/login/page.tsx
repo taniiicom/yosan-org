@@ -16,10 +16,20 @@ export default function LoginPage() {
   return (
     <Box p={6} textAlign="center">
       <Stack spacing={4} maxW="sm" mx="auto">
-        <Button colorScheme="blue" onClick={loginGoogle}>
+        <Button
+          bg="#DB4437"
+          color="white"
+          _hover={{ bg: '#c23321' }}
+          onClick={loginGoogle}
+        >
           Googleでログイン
         </Button>
-        <Button colorScheme="twitter" onClick={loginTwitter}>
+        <Button
+          bg="#1DA1F2"
+          color="white"
+          _hover={{ bg: '#0d95e8' }}
+          onClick={loginTwitter}
+        >
           Twitterでログイン
         </Button>
       </Stack>
