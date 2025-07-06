@@ -42,7 +42,13 @@ import {
   ModalCloseButton,
   Input,
 } from "@chakra-ui/react";
-import { FaGithub, FaHeart, FaHandHoldingUsd, FaStar, FaUserCircle } from "react-icons/fa";
+import {
+  FaGithub,
+  FaHeart,
+  FaHandHoldingUsd,
+  FaStar,
+  FaDoorOpen,
+} from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { collection, addDoc, getDocs, query, limit, serverTimestamp, orderBy } from "firebase/firestore";
 import { db } from "../lib/firebase";
@@ -62,6 +68,8 @@ interface Dataset {
   revenue: Record<string, unknown>;
   expenditure: Record<string, unknown>;
   shareUrl?: string;
+  comments?: string[];
+  likes?: number;
 }
 
 const calculateTotal = (data: Record<string, unknown>): number => {
@@ -134,14 +142,24 @@ export default function Home() {
   const { user, logout } = useAuth();
   const router = useRouter();
   const [datasets, setDatasets] = useState<Dataset[]>([
-    { name: "Japan 2025", revenue: defaultRevenue, expenditure: defaultExpenditure },
+    {
+      name: "Japan 2025",
+      revenue: defaultRevenue,
+      expenditure: defaultExpenditure,
+      comments: [],
+      likes: 0,
+    },
   ]);
 
   useEffect(() => {
     const saved = localStorage.getItem("savedDatasets");
     if (saved) {
       try {
-        const arr: Dataset[] = JSON.parse(saved);
+        const arr: Dataset[] = JSON.parse(saved).map((d: Dataset) => ({
+          comments: [],
+          likes: 0,
+          ...d,
+        }));
         if (arr.length > 0) {
           setDatasets((prev) => [...prev, ...arr]);
         }
@@ -151,6 +169,8 @@ export default function Home() {
     if (shared) {
       try {
         const ds: Dataset = JSON.parse(shared);
+        ds.comments = ds.comments || [];
+        ds.likes = ds.likes || 0;
         setDatasets((prev) => [ds, ...prev]);
         setSelected(0);
       } catch {}
@@ -181,6 +201,8 @@ export default function Home() {
             revenue: JSON.parse(data.revenue),
             expenditure: JSON.parse(data.expenditure),
             shareUrl: `${window.location.origin}/idea/${d.id}`,
+            comments: [],
+            likes: 0,
           };
         });
         setCommunity(arr);
@@ -200,6 +222,7 @@ export default function Home() {
   const [error, setError] = useState<string>("");
   const [editMode, setEditMode] = useState<"view" | "edit">("view");
   const [community, setCommunity] = useState<Dataset[]>([]);
+  const [commentText, setCommentText] = useState("");
   const hasShared = datasets[0]?.shareUrl !== undefined;
 
   useEffect(() => {
@@ -266,6 +289,28 @@ export default function Home() {
     });
   };
 
+  const handleAddComment = () => {
+    if (!commentText.trim()) return;
+    setDatasets((prev) => {
+      const updated = [...prev];
+      const ds = { ...updated[selected] };
+      ds.comments = ds.comments ? [...ds.comments, commentText.trim()] : [commentText.trim()];
+      updated[selected] = ds;
+      return updated;
+    });
+    setCommentText("");
+  };
+
+  const handleLike = () => {
+    setDatasets((prev) => {
+      const updated = [...prev];
+      const ds = { ...updated[selected] };
+      ds.likes = (ds.likes || 0) + 1;
+      updated[selected] = ds;
+      return updated;
+    });
+  };
+
   const [saveName, setSaveName] = useState('');
   const [saveDesc, setSaveDesc] = useState('');
   const toast = useToast();
@@ -276,6 +321,8 @@ export default function Home() {
       description,
       revenue: current.revenue,
       expenditure: current.expenditure,
+      comments: current.comments || [],
+      likes: current.likes || 0,
     };
     if (user) {
       try {
@@ -537,12 +584,12 @@ export default function Home() {
             ) : isMobile ? (
               <IconButton
                 aria-label="ログイン"
-                icon={<FaUserCircle />}
+                icon={<FaDoorOpen />}
                 variant="outline"
-                onClick={() => router.push('/login')}
+                onClick={() => window.open('/login', '_blank')}
               />
             ) : (
-              <Button leftIcon={<FaUserCircle />} onClick={() => router.push('/login')}>
+              <Button leftIcon={<FaDoorOpen />} onClick={() => window.open('/login', '_blank')}>
                 ログイン
               </Button>
             )}
@@ -622,6 +669,21 @@ export default function Home() {
           />
         </SimpleGrid>
 
+        <Box mt={4}>
+          <Heading size="sm" mb={2}>コメント</Heading>
+          <Stack spacing={2} maxH="40" overflowY="auto">
+            {current.comments?.map((c, i) => (
+              <Box key={i} p={2} borderWidth="1px" borderRadius="md" bg="white" _dark={{ bg: 'gray.700' }}>
+                {c}
+              </Box>
+            ))}
+          </Stack>
+          <Flex mt={2} gap={2}>
+            <Input flex="1" value={commentText} onChange={(e) => setCommentText(e.target.value)} placeholder="コメントを入力" />
+            <Button onClick={handleAddComment}>投稿</Button>
+          </Flex>
+        </Box>
+
         <SimpleGrid columns={{ base: 1, lg: 2 }} gap={6}>
           <Box p={4} borderWidth="1px" borderRadius="xl" bg="gray.50" _dark={{ bg: 'gray.700' }}>
             <Text fontWeight="semibold" mb={2}>Revenue JSON</Text>
@@ -650,6 +712,20 @@ export default function Home() {
         </Box>
       </Flex>
       <Footer />
+      {typeof current.likes !== 'undefined' && (
+        <Box position="fixed" bottom="16" right="4" bg="pink.500" color="white" px={2} py={1} rounded="md" fontSize="sm">
+          {current.likes}
+        </Box>
+      )}
+      <IconButton
+        aria-label="いいね"
+        icon={<FaHeart />}
+        colorScheme="pink"
+        position="fixed"
+        bottom="4"
+        right="4"
+        onClick={handleLike}
+      />
       <Modal isOpen={saveOpen} onClose={closeSave}>
         <ModalOverlay />
         <ModalContent>
