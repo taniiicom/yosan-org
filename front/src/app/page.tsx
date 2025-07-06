@@ -176,11 +176,11 @@ export default function Home() {
             description: data.description,
             revenue: JSON.parse(data.revenue),
             expenditure: JSON.parse(data.expenditure),
-            shareUrl: `${window.location.origin}/share/${d.id}`,
+            shareUrl: `${window.location.origin}/idea/${d.id}`,
           };
         });
         arr.sort(() => Math.random() - 0.5);
-        setCommunity(arr.slice(0, 3));
+        setCommunity(arr.slice(0, 10));
       } catch {
         // ignore
       }
@@ -197,12 +197,23 @@ export default function Home() {
   const [error, setError] = useState<string>("");
   const [editMode, setEditMode] = useState<"view" | "edit">("view");
   const [community, setCommunity] = useState<Dataset[]>([]);
+  const hasShared = datasets[0]?.shareUrl !== undefined;
 
   useEffect(() => {
     const ds = datasets[selected];
     setRevenueInput(JSON.stringify(ds.revenue, null, 2));
     setExpenditureInput(JSON.stringify(ds.expenditure, null, 2));
   }, [selected, datasets]);
+
+  useEffect(() => {
+    const url = datasets[selected].shareUrl;
+    if (url) {
+      const path = new URL(url).pathname;
+      router.replace(path);
+    } else {
+      router.replace('/');
+    }
+  }, [selected, datasets, router]);
 
   const updateDataset = () => {
     try {
@@ -217,11 +228,6 @@ export default function Home() {
     }
   };
 
-  const addDataset = () => {
-    const name = `Custom ${datasets.length}`;
-    setDatasets([...datasets, { name, revenue: {}, expenditure: {} }]);
-    setSelected(datasets.length);
-  };
 
   const handleRevenueEdit = (
     op: "set" | "delete" | "add",
@@ -278,7 +284,7 @@ export default function Home() {
           expenditure: JSON.stringify(current.expenditure),
           createdAt: serverTimestamp(),
         });
-        const url = `${window.location.origin}/share/${docRef.id}`;
+        const url = `${window.location.origin}/idea/${docRef.id}`;
         newDs.shareUrl = url;
         await navigator.clipboard.writeText(url);
         toast({ description: '共有リンクをコピーしました', status: 'success' });
@@ -309,6 +315,16 @@ export default function Home() {
     }
   };
 
+  const shareTwitter = () => {
+    const url = datasets[selected].shareUrl;
+    if (url) {
+      const tweet = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}`;
+      window.open(tweet, '_blank');
+    } else {
+      toast({ description: 'まず保存してください', status: 'info' });
+    }
+  };
+
   const current = datasets[selected];
 
   const revenueTotal = calculateTotal(current.revenue);
@@ -328,60 +344,102 @@ export default function Home() {
 
   const SidebarContent = ({ onSelect }: { onSelect?: () => void }) => (
     <Box
-      w={{ base: "full", lg: 60 }}
+      w={{ base: 'full', lg: 60 }}
       p={4}
-      borderRightWidth="1px"
-      bg="gray.50"
-      _dark={{ bg: "gray.800" }}
-      minH="100vh"
+      borderRightWidth='1px'
+      bg='gray.50'
+      _dark={{ bg: 'gray.800' }}
+      minH='100vh'
     >
-      <Heading size="sm" mb={4}>
-        データセット
+      <Heading size='sm' mb={2}>
+        オリジナル
       </Heading>
       <Stack spacing={2}>
-        {datasets.map((d, i) => (
-          <Button
-            key={i}
-            variant={selected === i ? "solid" : "ghost"}
-            colorScheme="blue"
-            justifyContent="flex-start"
-            onClick={() => {
-              setSelected(i);
-              if (onSelect) onSelect();
-            }}
-          >
-            {d.name}
-          </Button>
-        ))}
+        {datasets
+          .slice(hasShared ? 1 : 0, hasShared ? 2 : 1)
+          .map((d, i) => {
+            const index = i + (hasShared ? 1 : 0);
+            return (
+              <Button
+                key={index}
+                variant={selected === index ? 'solid' : 'ghost'}
+                colorScheme='blue'
+                justifyContent='flex-start'
+                textAlign='left'
+                whiteSpace='normal'
+                onClick={() => {
+                  setSelected(index);
+                  if (onSelect) onSelect();
+                }}
+              >
+                <Box>
+                  <Text>{d.name}</Text>
+                  {d.description && (
+                    <Text fontSize='xs' color='gray.500'>
+                      {d.description}
+                    </Text>
+                  )}
+                </Box>
+              </Button>
+            );
+          })}
       </Stack>
-      <Button
-        mt={4}
-        w="full"
-        onClick={() => {
-          addDataset();
-          if (onSelect) onSelect();
-        }}
-      >
-        追加
-      </Button>
+      {hasShared && (
+        <>
+          <Heading size='sm' mt={6} mb={2}>
+            今表示している予算案
+          </Heading>
+          <Stack spacing={2}>
+            <Button
+              variant={selected === 0 ? 'solid' : 'ghost'}
+              colorScheme='blue'
+              justifyContent='flex-start'
+              textAlign='left'
+              whiteSpace='normal'
+              onClick={() => {
+                setSelected(0);
+                if (onSelect) onSelect();
+              }}
+            >
+              <Box>
+                <Text>{datasets[0].name}</Text>
+                {datasets[0].description && (
+                  <Text fontSize='xs' color='gray.500'>
+                    {datasets[0].description}
+                  </Text>
+                )}
+              </Box>
+            </Button>
+          </Stack>
+        </>
+      )}
       {community.length > 0 && (
         <>
-          <Heading size="sm" mt={6} mb={2}>
+          <Heading size='sm' mt={6} mb={2}>
             みんなの予算案
           </Heading>
           <Stack spacing={2}>
             {community.map((d, i) => (
               <Button
                 key={`c-${i}`}
-                variant="ghost"
-                justifyContent="flex-start"
+                variant='ghost'
+                justifyContent='flex-start'
+                textAlign='left'
+                whiteSpace='normal'
                 onClick={() => {
                   setDatasets((prev) => [...prev, d]);
                   setSelected(datasets.length);
                   if (onSelect) onSelect();
                 }}
               >
-                {d.name}
+                <Box>
+                  <Text>{d.name}</Text>
+                  {d.description && (
+                    <Text fontSize='xs' color='gray.500'>
+                      {d.description}
+                    </Text>
+                  )}
+                </Box>
               </Button>
             ))}
           </Stack>
@@ -506,8 +564,11 @@ export default function Home() {
           >
             保存
           </Button>
-          <Button onClick={() => copyLink()} variant="outline" colorScheme="blue">
-            リンク取得
+          <Button onClick={shareTwitter} colorScheme="twitter" variant="outline">
+            Twitter にシェア
+          </Button>
+          <Button onClick={copyLink} variant="outline" colorScheme="gray">
+            リンク共有
           </Button>
           {error && (
             <Text color="red.500" fontSize="sm">
