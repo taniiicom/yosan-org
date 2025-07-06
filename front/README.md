@@ -66,8 +66,8 @@ service cloud.firestore {
 }
 ```
 
-4. プロジェクトルートの `.env.example` を `.env` にコピーします。
-5. Firebase コンソールの **プロジェクト設定** → **全般** で Web アプリを登録し、表示される **Firebase SDK snippet** の `config` オブジェクトから各種キーを取得して `.env` に記入します。これらの API キーは公開されても問題ありませんが、Firestore のルールで適切にアクセス制限を行ってください。
+4. `front/.env` に Firebase の設定を記入します。まずプロジェクトルートの `.env.example` を `front/.env` にコピーしてください。
+5. Firebase コンソールの **プロジェクト設定** → **全般** で Web アプリを登録し、表示される **Firebase SDK snippet** の `config` オブジェクトから各種キーを取得して `front/.env` に記入します。これらの API キーは公開されても問題ありませんが、Firestore のルールで適切にアクセス制限を行ってください。
 6. コレクションを作成するときは最初のドキュメントを追加する必要があります。各コレクションのドキュメント例は次のとおりです（`createdAt` は `FieldValue.serverTimestamp()` を設定してください）。
 
    **budgets**
@@ -100,3 +100,5 @@ service cloud.firestore {
    | createdAt    | timestamp | `serverTimestamp()` を設定    |
 
 コメントやいいねはデータ作成者以外のユーザーも行えるよう、上記のルールを設定します。
+なお、いいねやコメントを保存するには対象の予算案が Firestore に保存されている必要があります。
+共有リンクを発行していないデータには ID がないため、まず「保存」ボタンからデータを保存してください。

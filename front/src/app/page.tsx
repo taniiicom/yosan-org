@@ -798,9 +798,22 @@ export default function Home() {
             ))}
           </Stack>
           <Flex mt={2} gap={2}>
-            <Input flex="1" value={commentText} onChange={(e) => setCommentText(e.target.value)} placeholder="コメントを入力" />
-            <Button onClick={handleAddComment}>投稿</Button>
+            <Input
+              flex="1"
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              placeholder="コメントを入力"
+              isDisabled={!current.id}
+            />
+            <Button onClick={handleAddComment} isDisabled={!current.id}>
+              投稿
+            </Button>
           </Flex>
+          {!current.id && (
+            <Text mt={2} fontSize="sm" color="gray.500">
+              まず保存するとコメントできます
+            </Text>
+          )}
         </Box>
 
         <SimpleGrid columns={{ base: 1, lg: 2 }} gap={6}>
@@ -839,10 +852,16 @@ export default function Home() {
         bottom="4"
         right="4"
         onClick={handleLike}
+        isDisabled={!current.id}
         borderRadius="full"
       >
         {current.likes}
       </Button>
+      {!current.id && (
+        <Text position="fixed" bottom="16" right="4" fontSize="sm" color="gray.500">
+          保存するといいねできます
+        </Text>
+      )}
       <Modal isOpen={saveOpen} onClose={closeSave}>
         <ModalOverlay />
         <ModalContent>
