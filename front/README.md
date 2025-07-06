@@ -57,3 +57,13 @@ service cloud.firestore {
 
 4. プロジェクトルートの `.env.example` を `.env` にコピーします。
 5. Firebase コンソールの **プロジェクト設定** → **全般** で Web アプリを登録し、表示される **Firebase SDK snippet** の `config` オブジェクトから各種キーを取得して `.env` に記入します。これらの API キーは公開されても問題ありませんが、Firestore のルールで適切にアクセス制限を行ってください。
+6. コレクションを作成するときは最初のドキュメントを追加する必要があります。`budgets` コレクションのドキュメント構造は次のとおりです（`createdAt` は `FieldValue.serverTimestamp()` を設定してください）。
+
+   | フィールド名  | 型        | 説明                             |
+   | ------------ | --------- | -------------------------------- |
+   | userId       | string    | Firebase Authentication の UID   |
+   | name         | string    | データセット名                   |
+   | description  | string    | 説明（任意）                     |
+   | revenue      | string    | 予算歳入 JSON を文字列化したもの |
+   | expenditure  | string    | 予算歳出 JSON を文字列化したもの |
+   | createdAt    | timestamp | `serverTimestamp()` を設定        |
