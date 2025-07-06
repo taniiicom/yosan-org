@@ -341,6 +341,7 @@ export default function Home() {
     onClose: closeSave,
   } = useDisclosure();
   const isDesktop = useBreakpointValue({ base: false, lg: true });
+  const isMobile = useBreakpointValue({ base: true, md: false });
 
   const SidebarContent = ({ onSelect }: { onSelect?: () => void }) => (
     <Box
@@ -530,6 +531,13 @@ export default function Home() {
                   <MenuItem onClick={logout}>ログアウト</MenuItem>
                 </MenuList>
               </Menu>
+            ) : isMobile ? (
+              <IconButton
+                aria-label="ログイン"
+                icon={<FaUserCircle />}
+                variant="outline"
+                onClick={() => router.push('/login')}
+              />
             ) : (
               <Button leftIcon={<FaUserCircle />} onClick={() => router.push('/login')}>
                 ログイン
