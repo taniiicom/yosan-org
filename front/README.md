@@ -40,7 +40,7 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 このアプリではユーザー認証とデータ保存に Firebase を使用します。実行前に次の手順を行ってください。
 
 1. Firebase プロジェクトを作成し、Authentication で **Google** と **Twitter** のログイン方法を有効化します。
-2. Cloud Firestore を有効化して `budgets` コレクションを作成します。
+2. Cloud Firestore を有効化し、データベース ID を `yosanorg` に設定した上で `budgets` コレクションを作成します。
 3. セキュリティルールを以下のように設定します。
 
 ```text
