@@ -44,7 +44,7 @@ import {
 } from "@chakra-ui/react";
 import { FaGithub, FaHeart, FaHandHoldingUsd, FaStar, FaUserCircle } from "react-icons/fa";
 import { useRouter } from "next/navigation";
-import { collection, addDoc, getDocs, query, limit, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, getDocs, query, limit, serverTimestamp, orderBy } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useAuth } from "@/lib/auth";
 import defaultRevenue from "../data/japan/2025/revenue.json";
@@ -161,7 +161,11 @@ export default function Home() {
   useEffect(() => {
     const fetchCommunity = async () => {
       try {
-        const q = query(collection(db, 'budgets'), limit(10));
+        const q = query(
+          collection(db, 'budgets'),
+          orderBy('createdAt', 'desc'),
+          limit(20)
+        );
         const snap = await getDocs(q);
         type FirestoreBudget = {
           name: string;
@@ -179,8 +183,7 @@ export default function Home() {
             shareUrl: `${window.location.origin}/idea/${d.id}`,
           };
         });
-        arr.sort(() => Math.random() - 0.5);
-        setCommunity(arr.slice(0, 10));
+        setCommunity(arr);
       } catch {
         // ignore
       }
