@@ -61,7 +61,7 @@ import {
   updateDoc,
   doc,
   arrayUnion,
-  increment,
+  arrayRemove,
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useAuth } from "@/lib/auth";
@@ -86,6 +86,7 @@ interface Dataset {
   expenditure: Record<string, unknown>;
   shareUrl?: string;
   comments?: Comment[];
+  likedBy?: string[];
   likes?: number;
 }
 
@@ -164,6 +165,7 @@ export default function Home() {
       revenue: defaultRevenue,
       expenditure: defaultExpenditure,
       comments: [],
+      likedBy: [],
       likes: 0,
     },
   ]);
@@ -174,7 +176,8 @@ export default function Home() {
       try {
         const arr: Dataset[] = JSON.parse(saved).map((d: Dataset) => ({
           comments: [],
-          likes: 0,
+          likedBy: d.likedBy || [],
+          likes: d.likedBy ? d.likedBy.length : d.likes || 0,
           ...d,
         }));
         if (arr.length > 0) {
@@ -187,7 +190,8 @@ export default function Home() {
       try {
         const ds: Dataset = JSON.parse(shared);
         ds.comments = ds.comments || [];
-        ds.likes = ds.likes || 0;
+        ds.likedBy = ds.likedBy || [];
+        ds.likes = ds.likedBy.length;
         setDatasets((prev) => [ds, ...prev]);
         setSelected(0);
       } catch {}
@@ -210,7 +214,7 @@ export default function Home() {
           revenue: string;
           expenditure: string;
           comments?: Comment[];
-          likes?: number;
+          likedBy?: string[];
         };
         const arr: Dataset[] = snap.docs.map((d) => {
           const data = d.data() as FirestoreBudget;
@@ -221,7 +225,8 @@ export default function Home() {
             expenditure: JSON.parse(data.expenditure),
             shareUrl: `${window.location.origin}/idea/${d.id}`,
             comments: data.comments || [],
-            likes: data.likes || 0,
+            likedBy: data.likedBy || [],
+            likes: data.likedBy ? data.likedBy.length : 0,
           };
         });
         setCommunity(arr);
@@ -343,18 +348,29 @@ export default function Home() {
   };
 
   const handleLike = async () => {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+    const uid = user.uid;
+    const cur = datasets[selected];
+    const already = cur.likedBy?.includes(uid);
     setDatasets((prev) => {
       const updated = [...prev];
       const ds = { ...updated[selected] };
-      ds.likes = (ds.likes || 0) + 1;
+      ds.likedBy = ds.likedBy || [];
+      ds.likedBy = already
+        ? ds.likedBy.filter((id) => id !== uid)
+        : [...ds.likedBy, uid];
+      ds.likes = ds.likedBy.length;
       updated[selected] = ds;
       return updated;
     });
-    if (datasets[selected].shareUrl) {
-      const id = datasets[selected].shareUrl?.split('/').pop();
+    if (cur.shareUrl) {
+      const id = cur.shareUrl?.split('/').pop();
       try {
         await updateDoc(doc(db, 'budgets', id!), {
-          likes: increment(1),
+          likedBy: already ? arrayRemove(uid) : arrayUnion(uid),
         });
       } catch {
         // ignore
@@ -374,6 +390,7 @@ export default function Home() {
       revenue: current.revenue,
       expenditure: current.expenditure,
       comments: current.comments || [],
+      likedBy: current.likedBy || [],
       likes: current.likes || 0,
     };
     if (user) {
@@ -385,6 +402,7 @@ export default function Home() {
           revenue: JSON.stringify(current.revenue),
           expenditure: JSON.stringify(current.expenditure),
           comments: [],
+          likedBy: [],
           likes: 0,
           createdAt: serverTimestamp(),
         });
@@ -775,20 +793,18 @@ export default function Home() {
         </Box>
       </Flex>
       <Footer />
-      {typeof current.likes !== 'undefined' && (
-        <Box position="fixed" bottom="16" right="4" bg="pink.500" color="white" px={2} py={1} rounded="md" fontSize="sm">
-          {current.likes}
-        </Box>
-      )}
-      <IconButton
-        aria-label="いいね"
-        icon={<FaHeart />}
+      <Button
+        leftIcon={<FaHeart />}
+        variant={user && current.likedBy?.includes(user.uid) ? 'solid' : 'outline'}
         colorScheme="pink"
         position="fixed"
         bottom="4"
         right="4"
         onClick={handleLike}
-      />
+        borderRadius="full"
+      >
+        {current.likes}
+      </Button>
       <Modal isOpen={saveOpen} onClose={closeSave}>
         <ModalOverlay />
         <ModalContent>
