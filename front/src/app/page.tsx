@@ -189,54 +189,10 @@ export default function Home() {
   useEffect(() => {
     const fetchCommunity = async () => {
       try {
-        const q = query(
-          collection(db, "budgets"),
-          orderBy("createdAt", "desc"),
-          limit(20)
-        );
-        const snap = await getDocs(q);
-        type FirestoreBudget = {
-          name: string;
-          description?: string;
-          revenue: string;
-          expenditure: string;
-        };
-        const arr: Dataset[] = await Promise.all(
-          snap.docs.map(async (d) => {
-            const data = d.data() as FirestoreBudget;
-            const commentsSnap = await getDocs(
-              query(
-                collection(db, "comments"),
-                where("budgetId", "==", d.id),
-                orderBy("createdAt", "asc")
-              )
-            );
-            const likesSnap = await getDocs(
-              query(collection(db, "likes"), where("budgetId", "==", d.id))
-            );
-            const comments: Comment[] = commentsSnap.docs.map((c) => ({
-              username: c.data().username as string,
-              text: c.data().text as string,
-            }));
-            const likedBy = likesSnap.docs.map(
-              (l) => l.data().userId as string
-            );
-            return {
-              id: d.id,
-              name: data.name,
-              description: data.description,
-              revenue: JSON.parse(data.revenue),
-              expenditure: JSON.parse(data.expenditure),
-              shareUrl: `${window.location.origin}/idea/${d.id}`,
-              comments,
-              likedBy,
-              likes: likedBy.length,
-            };
-          })
-        );
-        setCommunity(arr);
-      } catch {
-        // ignore
+        const budgets = await getCommunityBudgets();
+        setCommunity(budgets);
+      } catch (error) {
+        console.error("Error fetching community budgets:", error);
       }
     };
     fetchCommunity();
