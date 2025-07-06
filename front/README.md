@@ -34,3 +34,69 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Firebase / Firestore 設定
+
+このアプリではユーザー認証とデータ保存に Firebase を使用します。実行前に次の手順を行ってください。
+
+1. Firebase プロジェクトを作成し、Authentication で **Google** と **Twitter** のログイン方法を有効化します。
+2. Cloud Firestore を有効化し、データベース ID を `yosanorg` に設定した上で `budgets`、`comments`、`likes` の各コレクションを作成します。
+3. セキュリティルールを以下のように設定します。
+
+```text
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /budgets/{budgetId} {
+      allow read: if true;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+    match /comments/{commentId} {
+      allow read: if true;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+    match /likes/{likeId} {
+      allow read: if true;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow delete: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+  }
+}
+```
+
+4. プロジェクトルートの `.env.example` を `.env` にコピーします。
+5. Firebase コンソールの **プロジェクト設定** → **全般** で Web アプリを登録し、表示される **Firebase SDK snippet** の `config` オブジェクトから各種キーを取得して `.env` に記入します。これらの API キーは公開されても問題ありませんが、Firestore のルールで適切にアクセス制限を行ってください。
+6. コレクションを作成するときは最初のドキュメントを追加する必要があります。各コレクションのドキュメント例は次のとおりです（`createdAt` は `FieldValue.serverTimestamp()` を設定してください）。
+
+   **budgets**
+
+   | フィールド名 | 型        | 説明                             |
+   | ------------ | --------- | -------------------------------- |
+   | userId       | string    | Firebase Authentication の UID   |
+   | name         | string    | データセット名                   |
+   | description  | string    | 説明（任意）                     |
+   | revenue      | string    | 予算歳入 JSON を文字列化したもの |
+   | expenditure  | string    | 予算歳出 JSON を文字列化したもの |
+   | createdAt    | timestamp | `serverTimestamp()` を設定        |
+
+   **comments**
+
+   | フィールド名 | 型        | 説明                               |
+   | ------------ | --------- | ---------------------------------- |
+   | budgetId     | string    | 紐づく budget ドキュメント ID       |
+   | userId       | string    | コメントしたユーザーの UID         |
+   | username     | string    | 表示名                             |
+   | text         | string    | コメント本文                       |
+   | createdAt    | timestamp | `serverTimestamp()` を設定          |
+
+   **likes**
+
+   | フィールド名 | 型     | 説明                         |
+   | ------------ | ------ | ---------------------------- |
+   | budgetId     | string | 紐づく budget ドキュメント ID |
+   | userId       | string | いいねしたユーザーの UID     |
+   | createdAt    | timestamp | `serverTimestamp()` を設定    |
+
+コメントやいいねはデータ作成者以外のユーザーも行えるよう、上記のルールを設定します。
