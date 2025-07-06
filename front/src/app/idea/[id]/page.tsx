@@ -43,6 +43,7 @@ export default function IdeaPage({ params }: any) {
           }))
           const likedBy = likesSnap.docs.map((l) => l.data().userId as string)
           const dataset = {
+            id: params.id,
             name: d.name,
             description: d.description,
             revenue: JSON.parse(d.revenue),

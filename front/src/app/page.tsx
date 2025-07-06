@@ -78,6 +78,7 @@ interface Comment {
 }
 
 interface Dataset {
+  id?: string;
   name: string;
   description?: string;
   revenue: Record<string, unknown>;
@@ -159,6 +160,7 @@ export default function Home() {
   const router = useRouter();
   const [datasets, setDatasets] = useState<Dataset[]>([
     {
+      id: undefined,
       name: "Japan 2025",
       revenue: defaultRevenue,
       expenditure: defaultExpenditure,
@@ -173,6 +175,7 @@ export default function Home() {
     if (saved) {
       try {
         const arr: Dataset[] = JSON.parse(saved).map((d: Dataset) => ({
+          id: d.id,
           comments: [],
           likedBy: d.likedBy || [],
           likes: d.likedBy ? d.likedBy.length : d.likes || 0,
@@ -190,6 +193,9 @@ export default function Home() {
         ds.comments = ds.comments || [];
         ds.likedBy = ds.likedBy || [];
         ds.likes = ds.likedBy.length;
+        if (ds.id && !ds.shareUrl) {
+          ds.shareUrl = `${window.location.origin}/idea/${ds.id}`;
+        }
         setDatasets((prev) => [ds, ...prev]);
         setSelected(0);
       } catch {}
@@ -231,6 +237,7 @@ export default function Home() {
             }));
             const likedBy = likesSnap.docs.map((l) => l.data().userId as string);
             return {
+              id: d.id,
               name: data.name,
               description: data.description,
               revenue: JSON.parse(data.revenue),
@@ -260,7 +267,7 @@ export default function Home() {
   const [editMode, setEditMode] = useState<"view" | "edit">("view");
   const [community, setCommunity] = useState<Dataset[]>([]);
   const [commentText, setCommentText] = useState("");
-  const hasShared = datasets[0]?.shareUrl !== undefined;
+  const hasShared = datasets[0]?.id !== undefined;
 
   useEffect(() => {
     const ds = datasets[selected];
@@ -269,10 +276,9 @@ export default function Home() {
   }, [selected, datasets]);
 
   useEffect(() => {
-    const url = datasets[selected].shareUrl;
-    if (url) {
-      const path = new URL(url).pathname;
-      router.replace(path);
+    const ds = datasets[selected];
+    if (ds.id) {
+      router.replace(`/idea/${ds.id}`);
     } else {
       router.replace('/');
     }
@@ -347,8 +353,8 @@ export default function Home() {
       updated[selected] = ds;
       return updated;
     });
-    if (datasets[selected].shareUrl) {
-      const id = datasets[selected].shareUrl?.split('/').pop();
+    if (datasets[selected].id) {
+      const id = datasets[selected].id;
       try {
         await addDoc(collection(db, 'comments'), {
           budgetId: id,
@@ -383,8 +389,8 @@ export default function Home() {
       updated[selected] = ds;
       return updated;
     });
-    if (cur.shareUrl) {
-      const id = cur.shareUrl?.split('/').pop();
+    if (cur.id) {
+      const id = cur.id;
       try {
         const likeQuery = query(
           collection(db, 'likes'),
@@ -414,6 +420,7 @@ export default function Home() {
 
   const handleSave = async (name: string, description: string) => {
     const newDs: Dataset = {
+      id: current.id,
       name,
       description,
       revenue: current.revenue,
@@ -432,6 +439,7 @@ export default function Home() {
           expenditure: JSON.stringify(current.expenditure),
           createdAt: serverTimestamp(),
         });
+        newDs.id = docRef.id;
         const url = `${window.location.origin}/idea/${docRef.id}`;
         newDs.shareUrl = url;
         await navigator.clipboard.writeText(url);
@@ -454,7 +462,9 @@ export default function Home() {
   };
 
   const copyLink = () => {
-    const url = datasets[selected].shareUrl;
+    const ds = datasets[selected];
+    const url =
+      ds.shareUrl || (ds.id ? `${window.location.origin}/idea/${ds.id}` : null);
     if (url) {
       navigator.clipboard.writeText(url);
       toast({ description: '共有リンクをコピーしました', status: 'success' });
@@ -464,7 +474,9 @@ export default function Home() {
   };
 
   const shareTwitter = () => {
-    const url = datasets[selected].shareUrl;
+    const ds = datasets[selected];
+    const url =
+      ds.shareUrl || (ds.id ? `${window.location.origin}/idea/${ds.id}` : null);
     if (url) {
       const tweet = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}`;
       window.open(tweet, '_blank');
