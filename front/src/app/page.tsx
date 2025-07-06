@@ -557,6 +557,10 @@ export default function Home() {
           <Heading size="sm" mt={6} mb={2}>
             みんなの予算案
           </Heading>
+          <Text fontSize="xs" color="gray.500" mb={2}>
+            以下はユーザ投稿コンテンツであり,
+            その正しさや不適切でないことを確認していません
+          </Text>
           <Stack spacing={2}>
             {community.map((d, i) => (
               <Button
@@ -709,13 +713,22 @@ export default function Home() {
               <Heading
                 bgGradient="linear(to-r, purple.500, blue.500)"
                 bgClip="text"
-                fontSize="3xl"
+                fontSize="xl"
                 fontWeight="bold"
               >
                 国家予算シミュレータ
               </Heading>
-              <Text color="gray.600" fontSize="sm">
-                データセットを編集してグラフに反映できます
+              <Heading
+                bgGradient="linear(to-r, purple.500, blue.500)"
+                bgClip="text"
+                fontSize="5xl"
+                fontWeight="bold"
+              >
+                yosan.org
+              </Heading>
+              <Text color="gray.600" fontSize="sm" mt={2}>
+                日本の国家予算をインタラクティブに可視化し,
+                自由に編集しながら試行錯誤し, 自分の考えた予算案をシェアできます
               </Text>
             </Box>
 
