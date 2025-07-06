@@ -47,10 +47,22 @@ import {
   FaHeart,
   FaHandHoldingUsd,
   FaStar,
-  FaDoorOpen,
+  FaSignInAlt,
 } from "react-icons/fa";
 import { useRouter } from "next/navigation";
-import { collection, addDoc, getDocs, query, limit, serverTimestamp, orderBy } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  limit,
+  serverTimestamp,
+  orderBy,
+  updateDoc,
+  doc,
+  arrayUnion,
+  increment,
+} from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useAuth } from "@/lib/auth";
 import defaultRevenue from "../data/japan/2025/revenue.json";
@@ -62,13 +74,18 @@ const BudgetChart = dynamic(() => import("../components/BudgetChart"), {
   loading: () => <Box textAlign="center" p={10}>Loading...</Box>,
 });
 
+interface Comment {
+  username: string;
+  text: string;
+}
+
 interface Dataset {
   name: string;
   description?: string;
   revenue: Record<string, unknown>;
   expenditure: Record<string, unknown>;
   shareUrl?: string;
-  comments?: string[];
+  comments?: Comment[];
   likes?: number;
 }
 
@@ -139,7 +156,7 @@ const addAtPath = (
 };
 
 export default function Home() {
-  const { user, logout } = useAuth();
+  const { user, logout, updateUsername } = useAuth();
   const router = useRouter();
   const [datasets, setDatasets] = useState<Dataset[]>([
     {
@@ -192,6 +209,8 @@ export default function Home() {
           description?: string;
           revenue: string;
           expenditure: string;
+          comments?: Comment[];
+          likes?: number;
         };
         const arr: Dataset[] = snap.docs.map((d) => {
           const data = d.data() as FirestoreBudget;
@@ -201,8 +220,8 @@ export default function Home() {
             revenue: JSON.parse(data.revenue),
             expenditure: JSON.parse(data.expenditure),
             shareUrl: `${window.location.origin}/idea/${d.id}`,
-            comments: [],
-            likes: 0,
+            comments: data.comments || [],
+            likes: data.likes || 0,
           };
         });
         setCommunity(arr);
@@ -240,6 +259,10 @@ export default function Home() {
       router.replace('/');
     }
   }, [selected, datasets, router]);
+
+  useEffect(() => {
+    setUsername(user?.displayName || '');
+  }, [user]);
 
   const updateDataset = () => {
     try {
@@ -289,19 +312,37 @@ export default function Home() {
     });
   };
 
-  const handleAddComment = () => {
+  const handleAddComment = async () => {
     if (!commentText.trim()) return;
+    if (!user) {
+      window.open('/login', '_blank');
+      return;
+    }
+    const comment: Comment = {
+      username: user.displayName || '名無し',
+      text: commentText.trim(),
+    };
     setDatasets((prev) => {
       const updated = [...prev];
       const ds = { ...updated[selected] };
-      ds.comments = ds.comments ? [...ds.comments, commentText.trim()] : [commentText.trim()];
+      ds.comments = ds.comments ? [...ds.comments, comment] : [comment];
       updated[selected] = ds;
       return updated;
     });
-    setCommentText("");
+    if (datasets[selected].shareUrl) {
+      const id = datasets[selected].shareUrl?.split('/').pop();
+      try {
+        await updateDoc(doc(db, 'budgets', id!), {
+          comments: arrayUnion(comment),
+        });
+      } catch {
+        // ignore
+      }
+    }
+    setCommentText('');
   };
 
-  const handleLike = () => {
+  const handleLike = async () => {
     setDatasets((prev) => {
       const updated = [...prev];
       const ds = { ...updated[selected] };
@@ -309,10 +350,21 @@ export default function Home() {
       updated[selected] = ds;
       return updated;
     });
+    if (datasets[selected].shareUrl) {
+      const id = datasets[selected].shareUrl?.split('/').pop();
+      try {
+        await updateDoc(doc(db, 'budgets', id!), {
+          likes: increment(1),
+        });
+      } catch {
+        // ignore
+      }
+    }
   };
 
   const [saveName, setSaveName] = useState('');
   const [saveDesc, setSaveDesc] = useState('');
+  const [username, setUsername] = useState('');
   const toast = useToast();
 
   const handleSave = async (name: string, description: string) => {
@@ -332,6 +384,8 @@ export default function Home() {
           description,
           revenue: JSON.stringify(current.revenue),
           expenditure: JSON.stringify(current.expenditure),
+          comments: [],
+          likes: 0,
           createdAt: serverTimestamp(),
         });
         const url = `${window.location.origin}/idea/${docRef.id}`;
@@ -389,6 +443,11 @@ export default function Home() {
     isOpen: saveOpen,
     onOpen: openSave,
     onClose: closeSave,
+  } = useDisclosure();
+  const {
+    isOpen: profileOpen,
+    onOpen: openProfile,
+    onClose: closeProfile,
   } = useDisclosure();
   const isDesktop = useBreakpointValue({ base: false, lg: true });
   const isMobile = useBreakpointValue({ base: true, md: false });
@@ -578,18 +637,19 @@ export default function Home() {
               <Menu>
                 <MenuButton as={IconButton} icon={<Avatar size="sm" src={user.photoURL || undefined} />} variant="outline" />
                 <MenuList>
+                  <MenuItem onClick={openProfile}>プロフィール設定</MenuItem>
                   <MenuItem onClick={logout}>ログアウト</MenuItem>
                 </MenuList>
               </Menu>
             ) : isMobile ? (
               <IconButton
                 aria-label="ログイン"
-                icon={<FaDoorOpen />}
+                icon={<FaSignInAlt />}
                 variant="outline"
                 onClick={() => window.open('/login', '_blank')}
               />
             ) : (
-              <Button leftIcon={<FaDoorOpen />} onClick={() => window.open('/login', '_blank')}>
+              <Button leftIcon={<FaSignInAlt />} onClick={() => window.open('/login', '_blank')}>
                 ログイン
               </Button>
             )}
@@ -674,7 +734,10 @@ export default function Home() {
           <Stack spacing={2} maxH="40" overflowY="auto">
             {current.comments?.map((c, i) => (
               <Box key={i} p={2} borderWidth="1px" borderRadius="md" bg="white" _dark={{ bg: 'gray.700' }}>
-                {c}
+                <Text fontWeight="bold" fontSize="sm">
+                  {c.username}
+                </Text>
+                <Text fontSize="sm">{c.text}</Text>
               </Box>
             ))}
           </Stack>
@@ -754,6 +817,33 @@ export default function Home() {
                 closeSave();
               }}
               isDisabled={!saveName.trim()}
+            >
+              保存
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+      <Modal isOpen={profileOpen} onClose={closeProfile}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>プロフィール設定</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <FormControl>
+              <FormLabel>表示名</FormLabel>
+              <Input value={username} onChange={(e) => setUsername(e.target.value)} />
+            </FormControl>
+          </ModalBody>
+          <ModalFooter>
+            <Button mr={3} onClick={closeProfile}>キャンセル</Button>
+            <Button
+              colorScheme="blue"
+              onClick={() => {
+                if (!username.trim()) return;
+                updateUsername(username.trim());
+                closeProfile();
+              }}
+              isDisabled={!username.trim()}
             >
               保存
             </Button>

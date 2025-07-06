@@ -17,6 +17,8 @@ export default function IdeaPage({ params }: any) {
           description?: string
           revenue: string
           expenditure: string
+          comments?: { username: string; text: string }[]
+          likes?: number
         }
         const d = snap.data() as FirestoreBudget
         const dataset = {
@@ -24,6 +26,8 @@ export default function IdeaPage({ params }: any) {
           description: d.description,
           revenue: JSON.parse(d.revenue),
           expenditure: JSON.parse(d.expenditure),
+          comments: d.comments || [],
+          likes: d.likes || 0,
           shareUrl: `${window.location.origin}/idea/${params.id}`,
         }
         localStorage.setItem('sharedDataset', JSON.stringify(dataset))

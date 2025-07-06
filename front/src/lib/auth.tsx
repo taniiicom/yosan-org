@@ -21,6 +21,7 @@ import {
   signOut,
   fetchSignInMethodsForEmail,
   linkWithCredential,
+  updateProfile,
 } from 'firebase/auth';
 import type { FirebaseError } from 'firebase/app';
 import { auth } from './firebase';
@@ -30,6 +31,7 @@ interface AuthContextType {
   loginGoogle: () => Promise<void>;
   loginTwitter: () => Promise<void>;
   logout: () => Promise<void>;
+  updateUsername: (name: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -37,6 +39,7 @@ const AuthContext = createContext<AuthContextType>({
   loginGoogle: async () => {},
   loginTwitter: async () => {},
   logout: async () => {},
+  updateUsername: async () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -118,8 +121,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     await signOut(auth);
   };
 
+  const updateUsername = async (name: string) => {
+    if (auth.currentUser) {
+      await updateProfile(auth.currentUser, { displayName: name });
+      setUser({ ...auth.currentUser });
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loginGoogle, loginTwitter, logout }}>
+    <AuthContext.Provider value={{ user, loginGoogle, loginTwitter, logout, updateUsername }}>
       {children}
       <Modal isOpen={isOpen} onClose={onClose} isCentered>
         <ModalOverlay />
