@@ -32,6 +32,11 @@ export default function LoginPage() {
         >
           Twitterでログイン
         </Button>
+        <Box fontSize="sm" color="gray.600">
+          `Twitter でログイン` ができない場合は, 同じメールアドレスで過去に `Google
+          でログイン` をしたことがある可能性があります. `Google でログイン` を
+          試してみてください.
+        </Box>
       </Stack>
     </Box>
   );

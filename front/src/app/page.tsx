@@ -566,8 +566,12 @@ export default function Home() {
           <Button onClick={updateDataset}>グラフ更新</Button>
           <Button
             onClick={() => {
-              setSaveName(current.name);
-              setSaveDesc(current.description || '');
+              if (!user) {
+                window.open('/login', '_blank');
+                return;
+              }
+              setSaveName('');
+              setSaveDesc('');
               openSave();
             }}
             colorScheme="green"
@@ -652,9 +656,12 @@ export default function Home() {
           <ModalHeader>データ保存</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <FormControl mb={4}>
+            <FormControl mb={4} isRequired>
               <FormLabel>名前</FormLabel>
-              <Input value={saveName} onChange={(e) => setSaveName(e.target.value)} />
+              <Input
+                value={saveName}
+                onChange={(e) => setSaveName(e.target.value)}
+              />
             </FormControl>
             <FormControl>
               <FormLabel>説明</FormLabel>
@@ -666,9 +673,11 @@ export default function Home() {
             <Button
               colorScheme="green"
               onClick={() => {
-                handleSave(saveName || current.name, saveDesc);
+                if (!saveName.trim()) return;
+                handleSave(saveName.trim(), saveDesc);
                 closeSave();
               }}
+              isDisabled={!saveName.trim()}
             >
               保存
             </Button>
