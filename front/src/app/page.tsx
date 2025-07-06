@@ -668,7 +668,7 @@ export default function Home() {
             </Popover>
             <Button
               as="a"
-              href="https://github.com/taniiicom/budget-simulator"
+              href="https://github.com/taniiicom/yosan-org"
               target="_blank"
               leftIcon={<FaGithub />}
               variant="outline"
