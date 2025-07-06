@@ -396,6 +396,7 @@ export default function Home() {
           await addDoc(collection(db, 'likes'), {
             budgetId: id,
             userId: uid,
+            createdAt: serverTimestamp(),
           });
         } else {
           await deleteDoc(likeSnap.docs[0].ref);
