@@ -32,6 +32,14 @@ import {
   MenuItem,
   useDisclosure,
   useBreakpointValue,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  ModalCloseButton,
+  Input,
 } from "@chakra-ui/react";
 import { FaGithub, FaHeart, FaHandHoldingUsd, FaStar, FaUserCircle } from "react-icons/fa";
 import { useRouter } from "next/navigation";
@@ -49,8 +57,10 @@ const BudgetChart = dynamic(() => import("../components/BudgetChart"), {
 
 interface Dataset {
   name: string;
+  description?: string;
   revenue: Record<string, unknown>;
   expenditure: Record<string, unknown>;
+  shareUrl?: string;
 }
 
 const calculateTotal = (data: Record<string, unknown>): number => {
@@ -136,6 +146,15 @@ export default function Home() {
         }
       } catch {}
     }
+    const shared = localStorage.getItem('sharedDataset');
+    if (shared) {
+      try {
+        const ds: Dataset = JSON.parse(shared);
+        setDatasets((prev) => [ds, ...prev]);
+        setSelected(0);
+      } catch {}
+      localStorage.removeItem('sharedDataset');
+    }
   }, []);
 
   useEffect(() => {
@@ -143,13 +162,20 @@ export default function Home() {
       try {
         const q = query(collection(db, 'budgets'), limit(10));
         const snap = await getDocs(q);
-        type FirestoreBudget = { name: string; revenue: string; expenditure: string };
+        type FirestoreBudget = {
+          name: string;
+          description?: string;
+          revenue: string;
+          expenditure: string;
+        };
         const arr: Dataset[] = snap.docs.map((d) => {
           const data = d.data() as FirestoreBudget;
           return {
             name: data.name,
+            description: data.description,
             revenue: JSON.parse(data.revenue),
             expenditure: JSON.parse(data.expenditure),
+            shareUrl: `${window.location.origin}/share/${d.id}`,
           };
         });
         arr.sort(() => Math.random() - 0.5);
@@ -230,11 +256,16 @@ export default function Home() {
     });
   };
 
-  const saveDataset = async () => {
-    const name = prompt("データセット名", current.name);
-    if (!name) return;
-    const description = prompt("説明") || "";
-    const newDs = { name, revenue: current.revenue, expenditure: current.expenditure };
+  const [saveName, setSaveName] = useState('');
+  const [saveDesc, setSaveDesc] = useState('');
+
+  const handleSave = async (name: string, description: string) => {
+    const newDs: Dataset = {
+      name,
+      description,
+      revenue: current.revenue,
+      expenditure: current.expenditure,
+    };
     if (user) {
       try {
         const docRef = await addDoc(collection(db, 'budgets'), {
@@ -246,18 +277,33 @@ export default function Home() {
           createdAt: serverTimestamp(),
         });
         const url = `${window.location.origin}/share/${docRef.id}`;
+        newDs.shareUrl = url;
         await navigator.clipboard.writeText(url);
         alert('共有リンクをコピーしました');
       } catch {
         alert('保存に失敗しました');
+        return;
       }
     } else {
-      const stored = localStorage.getItem("savedDatasets");
+      const stored = localStorage.getItem('savedDatasets');
       const arr = stored ? JSON.parse(stored) : [];
       arr.push(newDs);
-      localStorage.setItem("savedDatasets", JSON.stringify(arr));
-      setDatasets((prev) => [...prev, newDs]);
-      setSelected(datasets.length);
+      localStorage.setItem('savedDatasets', JSON.stringify(arr));
+    }
+    setDatasets((prev) => {
+      const updated = [...prev];
+      updated[selected] = newDs;
+      return updated;
+    });
+  };
+
+  const copyLink = () => {
+    const url = datasets[selected].shareUrl;
+    if (url) {
+      navigator.clipboard.writeText(url);
+      alert('共有リンクをコピーしました');
+    } else {
+      alert('まず保存してください');
     }
   };
 
@@ -266,7 +312,16 @@ export default function Home() {
   const revenueTotal = calculateTotal(current.revenue);
   const expenditureTotal = calculateTotal(current.expenditure);
 
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const {
+    isOpen: drawerOpen,
+    onOpen: openDrawer,
+    onClose: closeDrawer,
+  } = useDisclosure();
+  const {
+    isOpen: saveOpen,
+    onOpen: openSave,
+    onClose: closeSave,
+  } = useDisclosure();
   const isDesktop = useBreakpointValue({ base: false, lg: true });
 
   const SidebarContent = ({ onSelect }: { onSelect?: () => void }) => (
@@ -339,11 +394,11 @@ export default function Home() {
         {isDesktop ? (
           <SidebarContent />
         ) : (
-          <Drawer isOpen={isOpen} placement="left" onClose={onClose}>
+          <Drawer isOpen={drawerOpen} placement="left" onClose={closeDrawer}>
             <DrawerOverlay />
             <DrawerContent maxW="60">
               <DrawerBody p={0}>
-                <SidebarContent onSelect={onClose} />
+                <SidebarContent onSelect={closeDrawer} />
               </DrawerBody>
             </DrawerContent>
           </Drawer>
@@ -358,7 +413,7 @@ export default function Home() {
                     <path d="M2 4h16M2 10h16M2 16h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                   </svg>
                 }
-                onClick={onOpen}
+                onClick={openDrawer}
                 variant="outline"
               />
             )}
@@ -438,8 +493,19 @@ export default function Home() {
 
         <Flex flexWrap="wrap" align="center" gap={4}>
           <Button onClick={updateDataset}>グラフ更新</Button>
-          <Button onClick={saveDataset} colorScheme="green" variant="outline">
+          <Button
+            onClick={() => {
+              setSaveName(current.name);
+              setSaveDesc(current.description || '');
+              openSave();
+            }}
+            colorScheme="green"
+            variant="outline"
+          >
             保存
+          </Button>
+          <Button onClick={() => copyLink()} variant="outline" colorScheme="blue">
+            リンク取得
           </Button>
           {error && (
             <Text color="red.500" fontSize="sm">
@@ -506,6 +572,35 @@ export default function Home() {
         </Box>
       </Flex>
       <Footer />
+      <Modal isOpen={saveOpen} onClose={closeSave}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>データ保存</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <FormControl mb={4}>
+              <FormLabel>名前</FormLabel>
+              <Input value={saveName} onChange={(e) => setSaveName(e.target.value)} />
+            </FormControl>
+            <FormControl>
+              <FormLabel>説明</FormLabel>
+              <Textarea value={saveDesc} onChange={(e) => setSaveDesc(e.target.value)} />
+            </FormControl>
+          </ModalBody>
+          <ModalFooter>
+            <Button mr={3} onClick={closeSave}>キャンセル</Button>
+            <Button
+              colorScheme="green"
+              onClick={() => {
+                handleSave(saveName || current.name, saveDesc);
+                closeSave();
+              }}
+            >
+              保存
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Box>
   );
 }
