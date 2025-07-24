@@ -61,6 +61,36 @@ import {
 import { useAuth } from "@/lib/auth";
 import defaultRevenue from "../data/japan/2025/revenue.json";
 import defaultExpenditure from "../data/japan/2025/expenditure.json";
+
+// Import data for all available years
+import revenue2024 from "../data/japan/2024/revenue.json";
+import expenditure2024 from "../data/japan/2024/expenditure.json";
+import revenue2023 from "../data/japan/2023/revenue.json";
+import expenditure2023 from "../data/japan/2023/expenditure.json";
+import revenue2022 from "../data/japan/2022/revenue.json";
+import expenditure2022 from "../data/japan/2022/expenditure.json";
+import revenue2021 from "../data/japan/2021/revenue.json";
+import expenditure2021 from "../data/japan/2021/expenditure.json";
+import revenue2020 from "../data/japan/2020/revenue.json";
+import expenditure2020 from "../data/japan/2020/expenditure.json";
+import revenue2019 from "../data/japan/2019/revenue.json";
+import expenditure2019 from "../data/japan/2019/expenditure.json";
+import revenue2018 from "../data/japan/2018/revenue.json";
+import expenditure2018 from "../data/japan/2018/expenditure.json";
+import revenue2017 from "../data/japan/2017/revenue.json";
+import expenditure2017 from "../data/japan/2017/expenditure.json";
+import revenue2016 from "../data/japan/2016/revenue.json";
+import expenditure2016 from "../data/japan/2016/expenditure.json";
+import revenue2015 from "../data/japan/2015/revenue.json";
+import expenditure2015 from "../data/japan/2015/expenditure.json";
+import revenue2014 from "../data/japan/2014/revenue.json";
+import expenditure2014 from "../data/japan/2014/expenditure.json";
+import revenue2013 from "../data/japan/2013/revenue.json";
+import expenditure2013 from "../data/japan/2013/expenditure.json";
+import revenue2012 from "../data/japan/2012/revenue.json";
+import expenditure2012 from "../data/japan/2012/expenditure.json";
+import revenue2011 from "../data/japan/2011/revenue.json";
+import expenditure2011 from "../data/japan/2011/expenditure.json";
 import Footer from "../components/Footer";
 
 const BudgetChart = dynamic(() => import("../components/BudgetChart"), {
@@ -71,6 +101,25 @@ const BudgetChart = dynamic(() => import("../components/BudgetChart"), {
     </Box>
   ),
 });
+
+// Define budget data for all years
+const JAPAN_BUDGET_YEARS = [
+  { year: 2025, name: "2025年度予算案", revenue: defaultRevenue, expenditure: defaultExpenditure },
+  { year: 2024, name: "2024年度予算案", revenue: revenue2024, expenditure: expenditure2024 },
+  { year: 2023, name: "2023年度予算案", revenue: revenue2023, expenditure: expenditure2023 },
+  { year: 2022, name: "2022年度予算案", revenue: revenue2022, expenditure: expenditure2022 },
+  { year: 2021, name: "2021年度予算案", revenue: revenue2021, expenditure: expenditure2021 },
+  { year: 2020, name: "2020年度予算案", revenue: revenue2020, expenditure: expenditure2020 },
+  { year: 2019, name: "2019年度予算案", revenue: revenue2019, expenditure: expenditure2019 },
+  { year: 2018, name: "2018年度予算案", revenue: revenue2018, expenditure: expenditure2018 },
+  { year: 2017, name: "2017年度予算案", revenue: revenue2017, expenditure: expenditure2017 },
+  { year: 2016, name: "2016年度予算案", revenue: revenue2016, expenditure: expenditure2016 },
+  { year: 2015, name: "2015年度予算案", revenue: revenue2015, expenditure: expenditure2015 },
+  { year: 2014, name: "2014年度予算案", revenue: revenue2014, expenditure: expenditure2014 },
+  { year: 2013, name: "2013年度予算案", revenue: revenue2013, expenditure: expenditure2013 },
+  { year: 2012, name: "2012年度予算案", revenue: revenue2012, expenditure: expenditure2012 },
+  { year: 2011, name: "2011年度予算案", revenue: revenue2011, expenditure: expenditure2011 },
+];
 
 const calculateTotal = (data: Record<string, unknown>): number => {
   let total = 0;
@@ -142,17 +191,17 @@ export default function Home() {
   const { user, logout, updateUsername } = useAuth();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
-  const [datasets, setDatasets] = useState<Dataset[]>([
-    {
+  const [datasets, setDatasets] = useState<Dataset[]>(
+    JAPAN_BUDGET_YEARS.map(year => ({
       id: undefined,
-      name: "Japan 2025",
-      revenue: defaultRevenue,
-      expenditure: defaultExpenditure,
+      name: year.name,
+      revenue: year.revenue,
+      expenditure: year.expenditure,
       comments: [],
       likedBy: [],
       likes: 0,
-    },
-  ]);
+    }))
+  );
 
   useEffect(() => {
     setMounted(true);
@@ -186,6 +235,7 @@ export default function Home() {
         if (ds.id && !ds.shareUrl) {
           ds.shareUrl = `${window.location.origin}/idea/${ds.id}`;
         }
+        // Insert shared dataset at the beginning
         setDatasets((prev) => [ds, ...prev]);
         setSelected(0);
       } catch {}
@@ -215,7 +265,8 @@ export default function Home() {
   const [editMode, setEditMode] = useState<"view" | "edit">("view");
   const [community, setCommunity] = useState<Dataset[]>([]);
   const [commentText, setCommentText] = useState("");
-  const hasShared = datasets[0]?.id !== undefined;
+  // Check if any Japan budget has been shared/modified (has an ID)
+  const hasShared = datasets.slice(0, JAPAN_BUDGET_YEARS.length).some(d => d.id !== undefined);
 
   useEffect(() => {
     const ds = datasets[selected];
@@ -517,113 +568,152 @@ export default function Home() {
     );
   }
 
-  const SidebarContent = ({ onSelect }: { onSelect?: () => void }) => (
-    <Box
-      w={{ base: "full", lg: 60 }}
-      p={4}
-      borderRightWidth="1px"
-      bg="gray.50"
-      _dark={{ bg: "gray.800" }}
-      minH="100vh"
-    >
-      <Heading size="sm" mb={2}>
-        オリジナル
-      </Heading>
-      <Stack spacing={2}>
-        {datasets.slice(hasShared ? 1 : 0, hasShared ? 2 : 1).map((d, i) => {
-          const index = i + (hasShared ? 1 : 0);
-          return (
-            <Button
-              key={index}
-              variant={selected === index ? "solid" : "ghost"}
-              colorScheme="blue"
-              justifyContent="flex-start"
-              textAlign="left"
-              whiteSpace="normal"
-              onClick={() => {
-                setSelected(index);
-                if (onSelect) onSelect();
-              }}
-            >
-              <Box>
-                <Text>{d.name}</Text>
-                {d.description && (
-                  <Text fontSize="xs" color="gray.500">
-                    {d.description}
-                  </Text>
-                )}
-              </Box>
-            </Button>
-          );
-        })}
-      </Stack>
-      {hasShared && (
-        <>
-          <Heading size="sm" mt={6} mb={2}>
-            今表示している予算案
-          </Heading>
-          <Stack spacing={2}>
-            <Button
-              variant={selected === 0 ? "solid" : "ghost"}
-              colorScheme="blue"
-              justifyContent="flex-start"
-              textAlign="left"
-              whiteSpace="normal"
-              onClick={() => {
-                setSelected(0);
-                if (onSelect) onSelect();
-              }}
-            >
-              <Box>
-                <Text>{datasets[0].name}</Text>
-                {datasets[0].description && (
-                  <Text fontSize="xs" color="gray.500">
-                    {datasets[0].description}
-                  </Text>
-                )}
-              </Box>
-            </Button>
-          </Stack>
-        </>
-      )}
-      {community.length > 0 && (
-        <>
-          <Heading size="sm" mt={6} mb={2}>
-            みんなの予算案
-          </Heading>
-          <Text fontSize="xs" color="gray.500" mb={2}>
-            以下はユーザ投稿コンテンツであり,
-            その正しさや不適切でないことを確認していません
-          </Text>
-          <Stack spacing={2}>
-            {community.map((d, i) => (
+  const SidebarContent = ({ onSelect }: { onSelect?: () => void }) => {
+    const japanDatasetsCount = JAPAN_BUDGET_YEARS.length;
+    const startIndex = hasShared ? 1 : 0;
+    const japanDatasets = datasets.slice(startIndex, startIndex + japanDatasetsCount);
+    const userDatasets = datasets.slice(startIndex + japanDatasetsCount);
+    
+    return (
+      <Box
+        w={{ base: "full", lg: 60 }}
+        p={4}
+        borderRightWidth="1px"
+        bg="gray.50"
+        _dark={{ bg: "gray.800" }}
+        minH="100vh"
+        overflowY="auto"
+      >
+        {hasShared && (
+          <>
+            <Heading size="sm" mb={2}>
+              今表示している予算案
+            </Heading>
+            <Stack spacing={2} mb={4}>
               <Button
-                key={`c-${i}`}
-                variant="ghost"
+                variant={selected === 0 ? "solid" : "ghost"}
+                colorScheme="blue"
                 justifyContent="flex-start"
                 textAlign="left"
                 whiteSpace="normal"
                 onClick={() => {
-                  setDatasets((prev) => [...prev, d]);
-                  setSelected(datasets.length);
+                  setSelected(0);
                   if (onSelect) onSelect();
                 }}
               >
                 <Box>
-                  <Text>{d.name}</Text>
-                  {d.description && (
+                  <Text>{datasets[0].name}</Text>
+                  {datasets[0].description && (
                     <Text fontSize="xs" color="gray.500">
-                      {d.description}
+                      {datasets[0].description}
                     </Text>
                   )}
                 </Box>
               </Button>
-            ))}
-          </Stack>
-        </>
-      )}
-    </Box>
-  );
+            </Stack>
+          </>
+        )}
+        
+        <Heading size="sm" mb={2}>
+          Japan
+        </Heading>
+        <Stack spacing={1} mb={4}>
+          {japanDatasets.map((d, i) => {
+            const index = i + startIndex;
+            return (
+              <Button
+                key={index}
+                variant={selected === index ? "solid" : "ghost"}
+                colorScheme="blue"
+                justifyContent="flex-start"
+                textAlign="left"
+                whiteSpace="normal"
+                size="sm"
+                onClick={() => {
+                  setSelected(index);
+                  if (onSelect) onSelect();
+                }}
+              >
+                <Text fontSize="sm">{d.name}</Text>
+              </Button>
+            );
+          })}
+        </Stack>
+        
+        {userDatasets.length > 0 && (
+          <>
+            <Heading size="sm" mb={2}>
+              オリジナル
+            </Heading>
+            <Stack spacing={2} mb={4}>
+              {userDatasets.map((d, i) => {
+                const index = i + startIndex + japanDatasetsCount;
+                return (
+                  <Button
+                    key={index}
+                    variant={selected === index ? "solid" : "ghost"}
+                    colorScheme="blue"
+                    justifyContent="flex-start"
+                    textAlign="left"
+                    whiteSpace="normal"
+                    onClick={() => {
+                      setSelected(index);
+                      if (onSelect) onSelect();
+                    }}
+                  >
+                    <Box>
+                      <Text>{d.name}</Text>
+                      {d.description && (
+                        <Text fontSize="xs" color="gray.500">
+                          {d.description}
+                        </Text>
+                      )}
+                    </Box>
+                  </Button>
+                );
+              })}
+            </Stack>
+          </>
+        )}
+        {community.length > 0 && (
+          <>
+            <Heading size="sm" mb={2}>
+              みんなの予算案
+            </Heading>
+            <Text fontSize="xs" color="gray.500" mb={2}>
+              以下はユーザ投稿コンテンツであり,
+              その正しさや不適切でないことを確認していません
+            </Text>
+            <Stack spacing={2}>
+              {community.map((d, i) => (
+                <Button
+                  key={`c-${i}`}
+                  variant="ghost"
+                  justifyContent="flex-start"
+                  textAlign="left"
+                  whiteSpace="normal"
+                  onClick={() => {
+                    setDatasets((prev) => [...prev, d]);
+                    setSelected(datasets.length);
+                    if (onSelect) onSelect();
+                  }}
+                >
+                  <Box>
+                    <Text>{d.name}</Text>
+                    {d.description && (
+                      <Text fontSize="xs" color="gray.500">
+                        {d.description}
+                      </Text>
+                    )}
+                  </Box>
+                </Button>
+              ))}
+            </Stack>
+          </>
+        )}
+      </Box>
+    );
+  };
 
   return (
     <Box minH="100vh" display="flex" flexDirection="column">
