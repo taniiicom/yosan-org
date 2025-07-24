@@ -37,6 +37,44 @@
 
 自分たちの国の予算についても, 自分の払った税金の使い道についても, 一部の人の考えたキャッチフレーズだけで議論するのではなく, みんなが具体的な数字に触れられて, 「ああでもないこうでもない」と試行錯誤して, ボトムアップに集合知を結集できる場所があればいいのにと思い, このサービスを作りました.
 
+## 開発者向け情報
+
+### データ処理スクリプト
+
+国家予算の生データ（CSV）をJSON形式に変換するためのスクリプトが `scripts/process_csv_data.py` に用意されています。
+
+#### 前提条件
+- 生データは `front/src/data/raw/DL{年}11001/` ディレクトリに配置
+- `DL{年}11001a.csv`: 歳入データ
+- `DL{年}11001b.csv`: 歳出データ
+
+#### 使用方法
+
+```bash
+# 特定の年範囲を処理
+python3 scripts/process_csv_data.py --range 2011 2025
+
+# 特定の年のみ処理
+python3 scripts/process_csv_data.py --years 2020 2021 2022
+
+# 全年を処理（デフォルト: 2011-2025）
+python3 scripts/process_csv_data.py
+
+# カスタムベースディレクトリを指定
+python3 scripts/process_csv_data.py --base-dir /path/to/project --range 2020 2025
+```
+
+#### 出力
+- `front/src/data/japan/{年}/revenue.json`: 歳入データ
+- `front/src/data/japan/{年}/expenditure.json`: 歳出データ
+
+#### データ構造
+- **歳入データ**: `主管 → 款名 → 項名 → 目名` の階層構造
+- **歳出データ**: `所管 → 組織 → 目名` の階層構造
+- 金額は千円単位から円単位に自動変換（×1000）
+
+---
+
 designed by Taniii
 
 - https://taniii.com
