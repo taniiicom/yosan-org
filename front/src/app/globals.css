@@ -2,4 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body { height: 100%; }
+html, body { 
+  height: 100%; 
+}
+
+/* Prevent hydration mismatch for Chakra UI */
+html {
+  color-scheme: light;
+}
+
+body {
+  color-scheme: light;
+}
+
+/* Ensure consistent rendering */
+*, *::before, *::after {
+  box-sizing: border-box;
+}

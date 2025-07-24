@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
+import NoSSR from "../components/NoSSR";
 import {
   Box,
   Button,
@@ -31,7 +32,6 @@ import {
   MenuList,
   MenuItem,
   useDisclosure,
-  useBreakpointValue,
   useToast,
   Modal,
   ModalOverlay,
@@ -141,6 +141,7 @@ const addAtPath = (
 export default function Home() {
   const { user, logout, updateUsername } = useAuth();
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
   const [datasets, setDatasets] = useState<Dataset[]>([
     {
       id: undefined,
@@ -154,6 +155,12 @@ export default function Home() {
   ]);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted || typeof window === 'undefined') return;
+    
     const saved = localStorage.getItem("savedDatasets");
     if (saved) {
       try {
@@ -184,7 +191,7 @@ export default function Home() {
       } catch {}
       localStorage.removeItem("sharedDataset");
     }
-  }, []);
+  }, [mounted]);
 
   useEffect(() => {
     const fetchCommunity = async () => {
@@ -436,8 +443,7 @@ export default function Home() {
 
   const copyLink = () => {
     const ds = datasets[selected];
-    const url =
-      ds.shareUrl || (ds.id ? `${window.location.origin}/idea/${ds.id}` : null);
+    const url = ds.shareUrl || (ds.id ? `${window.location.origin}/idea/${ds.id}` : null);
     if (url) {
       navigator.clipboard.writeText(url);
       toast({ description: "共有リンクをコピーしました", status: "success" });
@@ -448,8 +454,7 @@ export default function Home() {
 
   const shareTwitter = () => {
     const ds = datasets[selected];
-    const url =
-      ds.shareUrl || (ds.id ? `${window.location.origin}/idea/${ds.id}` : null);
+    const url = ds.shareUrl || (ds.id ? `${window.location.origin}/idea/${ds.id}` : null);
     if (url) {
       const tweet = `https://twitter.com/intent/tweet?url=${encodeURIComponent(
         url
@@ -480,8 +485,37 @@ export default function Home() {
     onOpen: openProfile,
     onClose: closeProfile,
   } = useDisclosure();
-  const isDesktop = useBreakpointValue({ base: false, lg: true });
-  const isMobile = useBreakpointValue({ base: true, md: false });
+  const [isDesktop, setIsDesktop] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    if (!mounted) return;
+    
+    const checkBreakpoints = () => {
+      if (typeof window !== 'undefined') {
+        const width = window.innerWidth;
+        setIsDesktop(width >= 1024); // lg breakpoint
+        setIsMobile(width < 768); // md breakpoint
+      }
+    };
+
+    checkBreakpoints();
+    window.addEventListener('resize', checkBreakpoints);
+    return () => window.removeEventListener('resize', checkBreakpoints);
+  }, [mounted]);
+
+  // Early return during hydration to prevent mismatch
+  if (!mounted) {
+    return (
+      <Box minH="100vh" display="flex" flexDirection="column">
+        <Box flex="1" p={6}>
+          <Box textAlign="center" p={10}>
+            Loading...
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
 
   const SidebarContent = ({ onSelect }: { onSelect?: () => void }) => (
     <Box
@@ -594,42 +628,46 @@ export default function Home() {
   return (
     <Box minH="100vh" display="flex" flexDirection="column">
       <Flex flex="1">
-        {isDesktop ? (
-          <SidebarContent />
-        ) : (
-          <Drawer isOpen={drawerOpen} placement="left" onClose={closeDrawer}>
-            <DrawerOverlay />
-            <DrawerContent maxW="60">
-              <DrawerBody p={0}>
-                <SidebarContent onSelect={closeDrawer} />
-              </DrawerBody>
-            </DrawerContent>
-          </Drawer>
-        )}
+        <NoSSR>
+          {isDesktop ? (
+            <SidebarContent />
+          ) : (
+            <Drawer isOpen={drawerOpen} placement="left" onClose={closeDrawer}>
+              <DrawerOverlay />
+              <DrawerContent maxW="60">
+                <DrawerBody p={0}>
+                  <SidebarContent onSelect={closeDrawer} />
+                </DrawerBody>
+              </DrawerContent>
+            </Drawer>
+          )}
+        </NoSSR>
         <Box flex="1" p={6}>
           <Flex align="center" mb={4} gap={2} justify="space-between">
-            {!isDesktop && (
-              <IconButton
-                aria-label="メニュー"
-                icon={
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      d="M2 4h16M2 10h16M2 16h16"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                }
-                onClick={openDrawer}
-                variant="outline"
-              />
-            )}
+            <NoSSR>
+              {!isDesktop && (
+                <IconButton
+                  aria-label="メニュー"
+                  icon={
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        d="M2 4h16M2 10h16M2 16h16"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  }
+                  onClick={openDrawer}
+                  variant="outline"
+                />
+              )}
+            </NoSSR>
             <Box flex="1" />
             <Popover placement="bottom-end">
               <PopoverTrigger>
@@ -692,20 +730,24 @@ export default function Home() {
                   <MenuItem onClick={logout}>ログアウト</MenuItem>
                 </MenuList>
               </Menu>
-            ) : isMobile ? (
-              <IconButton
-                aria-label="ログイン"
-                icon={<FaSignInAlt />}
-                variant="outline"
-                onClick={() => window.open("/login", "_blank")}
-              />
             ) : (
-              <Button
-                leftIcon={<FaSignInAlt />}
-                onClick={() => window.open("/login", "_blank")}
-              >
-                ログイン
-              </Button>
+              <NoSSR>
+                {isMobile ? (
+                  <IconButton
+                    aria-label="ログイン"
+                    icon={<FaSignInAlt />}
+                    variant="outline"
+                    onClick={() => window.open("/login", "_blank")}
+                  />
+                ) : (
+                  <Button
+                    leftIcon={<FaSignInAlt />}
+                    onClick={() => window.open("/login", "_blank")}
+                  >
+                    ログイン
+                  </Button>
+                )}
+              </NoSSR>
             )}
           </Flex>
           <Stack gap={8}>
