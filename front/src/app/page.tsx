@@ -104,21 +104,21 @@ const BudgetChart = dynamic(() => import("../components/BudgetChart"), {
 
 // Define budget data for all years
 const JAPAN_BUDGET_YEARS = [
-  { year: 2025, name: "2025年度予算案", revenue: defaultRevenue, expenditure: defaultExpenditure },
-  { year: 2024, name: "2024年度予算案", revenue: revenue2024, expenditure: expenditure2024 },
-  { year: 2023, name: "2023年度予算案", revenue: revenue2023, expenditure: expenditure2023 },
-  { year: 2022, name: "2022年度予算案", revenue: revenue2022, expenditure: expenditure2022 },
-  { year: 2021, name: "2021年度予算案", revenue: revenue2021, expenditure: expenditure2021 },
-  { year: 2020, name: "2020年度予算案", revenue: revenue2020, expenditure: expenditure2020 },
-  { year: 2019, name: "2019年度予算案", revenue: revenue2019, expenditure: expenditure2019 },
-  { year: 2018, name: "2018年度予算案", revenue: revenue2018, expenditure: expenditure2018 },
-  { year: 2017, name: "2017年度予算案", revenue: revenue2017, expenditure: expenditure2017 },
-  { year: 2016, name: "2016年度予算案", revenue: revenue2016, expenditure: expenditure2016 },
-  { year: 2015, name: "2015年度予算案", revenue: revenue2015, expenditure: expenditure2015 },
-  { year: 2014, name: "2014年度予算案", revenue: revenue2014, expenditure: expenditure2014 },
-  { year: 2013, name: "2013年度予算案", revenue: revenue2013, expenditure: expenditure2013 },
-  { year: 2012, name: "2012年度予算案", revenue: revenue2012, expenditure: expenditure2012 },
-  { year: 2011, name: "2011年度予算案", revenue: revenue2011, expenditure: expenditure2011 },
+  { year: 2025, name: "2025年度", revenue: defaultRevenue, expenditure: defaultExpenditure },
+  { year: 2024, name: "2024年度", revenue: revenue2024, expenditure: expenditure2024 },
+  { year: 2023, name: "2023年度", revenue: revenue2023, expenditure: expenditure2023 },
+  { year: 2022, name: "2022年度", revenue: revenue2022, expenditure: expenditure2022 },
+  { year: 2021, name: "2021年度", revenue: revenue2021, expenditure: expenditure2021 },
+  { year: 2020, name: "2020年度", revenue: revenue2020, expenditure: expenditure2020 },
+  { year: 2019, name: "2019年度", revenue: revenue2019, expenditure: expenditure2019 },
+  { year: 2018, name: "2018年度", revenue: revenue2018, expenditure: expenditure2018 },
+  { year: 2017, name: "2017年度", revenue: revenue2017, expenditure: expenditure2017 },
+  { year: 2016, name: "2016年度", revenue: revenue2016, expenditure: expenditure2016 },
+  { year: 2015, name: "2015年度", revenue: revenue2015, expenditure: expenditure2015 },
+  { year: 2014, name: "2014年度", revenue: revenue2014, expenditure: expenditure2014 },
+  { year: 2013, name: "2013年度", revenue: revenue2013, expenditure: expenditure2013 },
+  { year: 2012, name: "2012年度", revenue: revenue2012, expenditure: expenditure2012 },
+  { year: 2011, name: "2011年度", revenue: revenue2011, expenditure: expenditure2011 },
 ];
 
 const calculateTotal = (data: Record<string, unknown>): number => {
@@ -615,7 +615,7 @@ export default function Home() {
         )}
         
         <Heading size="sm" mb={2}>
-          Japan
+          日本の予算案
         </Heading>
         <Stack spacing={1} mb={4}>
           {japanDatasets.map((d, i) => {
